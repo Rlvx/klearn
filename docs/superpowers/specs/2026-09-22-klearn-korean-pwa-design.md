@@ -18,7 +18,7 @@ Vanilla HTML/CSS/JS PWA, no framework, no build step.
 - Service worker precaches every asset (HTML, JS, CSS, JSON, font, icons) — cache-first; a new cache version replaces the old one on the next online load, progress untouched.
 - Hosted on GitHub Pages (HTTPS required for the service worker).
 - Audio: browser `speechSynthesis` with `lang="ko-KR"`, relying on the Android Google TTS Korean voice pack installed offline. If no Korean voice is available, audio buttons are hidden and a one-time notice explains how to install the voice pack.
-- Korean font bundled locally (Noto Sans KR subset or Pretendard) so Hangul renders offline.
+- No bundled font: Android ships Noto Sans CJK, so Hangul renders offline with the system font stack.
 
 Rejected: React/Vite (too much tooling for tonight), Anki-only (no custom exercises/gamification; kept as the user's personal backup).
 
@@ -35,7 +35,8 @@ One JSON file per unit in `content/`. Every learnable item:
 - `rom` — Revised Romanization; shown as a hint, hideable in settings.
 - `fr` — French meaning or sound.
 - `note` — optional tip.
-- `tiles` — optional, for sentences: ordered word chunks used by the sentence-building exercise.
+- `tiles` — optional, for sentences: ordered word chunks used by the sentence-building exercise. `tiles.join(' ')` must equal `ko`.
+- `say` — optional text passed to TTS instead of `ko` (jamo alone are read by their name, so ㄱ says "가").
 
 Units are split into lessons (5–10 items each). A lesson unlocks when the previous lesson has every item seen at least once.
 
@@ -49,7 +50,7 @@ Greetings, thanks/sorry, yes/no, "how much", "where is", "I'd like…", restaura
 Sino-Korean numbers (prices), native numbers (counting, age), food, places, transport, basic verbs.
 
 ### Field mode (no quiz)
-Phrases grouped by situation (café, restaurant, market, metro, taxi, hotel, pharmacy). Each shows big Korean text + French + play button — to show the screen or play it to someone.
+The lessons of the phrases unit are the situations (essentials, restaurant & café, shopping, getting around, hotel, health & emergencies…), so field mode lists those lessons. Each phrase shows big Korean text + French + play button — to show the screen or play it to someone.
 
 ## Exercises
 
@@ -60,11 +61,12 @@ Each exercise takes an item and returns correct/incorrect.
 | Recognize | Hangul, vocab, phrases | Korean shown → pick French/sound among 4 |
 | Listen & pick | all | audio plays → pick the Korean among 4 |
 | Reverse | vocab, phrases | French shown → pick Korean among 4 |
-| Type it | Hangul words, vocab, phrases | French or audio → type Korean with the phone's Korean keyboard; compared after trimming spaces and final punctuation |
+| Type it | all | French (+ optional audio) → type Korean with the phone's Korean keyboard; compared after NFC normalization, ignoring all spaces and punctuation |
 | Build sentence | phrases | tap shuffled `tiles` in order |
 | Shadowing | phrases | audio plays, user repeats aloud, self-rates Again/Good |
+| Flashcard | all | front Korean or French (random), flip, grade Again/Hard/Good/Easy |
 
-Distractors for multiple choice are drawn from the same unit. Listen exercises are skipped when no Korean voice is available.
+Distractors for multiple choice are drawn from the same unit. Listen and shadowing exercises are skipped when no Korean voice is available. Romanization is never shown in Hangul-unit quiz prompts (it would give the answer away); it is shown on intro cards, flashcard backs and feedback.
 
 ## Spaced repetition
 
@@ -73,7 +75,8 @@ SM-2 per item, stored as `{ ease, interval, due, reps, lapses }` keyed by item `
 - New item: first seen in a lesson (intro card: Korean + romanization + French + audio), then enters the review queue due today.
 - Flashcard review: 4 buttons Again/Hard/Good/Easy.
 - Exercise answer: correct = Good, incorrect = Again.
-- Daily session = due reviews (all units mixed, due first, oldest first) + new items from the next unlocked lesson, until the daily goal is met.
+- Home session = up to 5 new items (from the first incomplete lesson of each unit, Hangul first) + due reviews oldest first, capped at 20 quiz questions. A wrong answer re-queues the item once at the end of the session.
+- Unit map: tapping a lesson teaches its unseen items, or quizzes the whole lesson once all are seen.
 
 ## Gamification
 
@@ -99,15 +102,17 @@ Mobile-first, full-screen standalone display, dark and light theme following the
 ```
 index.html          app shell
 style.css
-app.js              screens + navigation
-srs.js              SM-2 scheduling (pure functions)
-exercises.js        exercise builders + answer checking
-store.js            localStorage load/save/export/import
+app.js              screens + navigation (DOM only)
+srs.js              SM-2 scheduling (pure)
+game.js             XP, daily goal, streak (pure)
+exercises.js        exercise choice, question building, answer checking (pure)
+session.js          session queues, lesson unlock (pure)
+store.js            localStorage load/save/import
 sw.js               service worker
 manifest.webmanifest
-content/*.json
-fonts/, icons/
-test.html           assert-based checks for srs.js and answer checking
+content/{hangul,phrases,vocab}.json
+icons/              generated by tools/icons.mjs
+tests/*.test.js     node --test
 ```
 
 ## Error handling
@@ -118,7 +123,7 @@ test.html           assert-based checks for srs.js and answer checking
 
 ## Testing
 
-- `test.html` runs asserts on SM-2 scheduling and typed-answer normalization.
+- `node --test` runs unit tests on the pure modules and a content well-formedness check (unique ids, required fields, tiles match).
 - Manual: install on Android, enable airplane mode, reload, run a full session including audio.
 
 ## Deployment
