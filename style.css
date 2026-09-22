@@ -106,3 +106,5 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
 .chip { flex: none; padding: 8px 14px; border-radius: 99px; font-weight: 600; font-size: 15px; background: var(--surface); border: 1px solid var(--line); }
 .chip.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.flash.pop { animation: pop .2s ease; }
+.unit.off { opacity: .45; }

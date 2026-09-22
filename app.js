@@ -3,11 +3,13 @@ import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
+import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound } from './games.js';
 
 const UNIT_IDS = ['hangul', 'phrases', 'vocab'];
 const app = document.getElementById('app');
 const byId = {};
 let units = [];
+let patterns = [];
 let state = load();
 let voice = null;
 let session = null;
@@ -34,7 +36,7 @@ const say = item => speak(item.say || item.ko);
 function initVoice() {
   if (!('speechSynthesis' in window)) return;
   const pick = () => { voice = speechSynthesis.getVoices().find(v => /^ko/i.test(v.lang)) || null; };
-  speechSynthesis.onvoiceschanged = () => { pick(); if (!location.hash.startsWith('#/session')) route(); };
+  speechSynthesis.onvoiceschanged = () => { pick(); if (!/^#\/(session|game\/)/.test(location.hash)) route(); };
   pick();
 }
 
@@ -42,10 +44,13 @@ function initVoice() {
 function route() {
   const [, screen, arg] = location.hash.split('/');
   if (screen !== 'session') session = null;
+  stopGame();
   if (screen === 'unit') renderUnit(arg);
   else if (screen === 'session') session ? renderSession() : (location.hash = '#/');
   else if (screen === 'field') renderField(arg);
   else if (screen === 'cards') renderCards(arg);
+  else if (screen === 'games') renderGames();
+  else if (screen === 'game') renderGame(arg);
   else if (screen === 'settings') renderSettings();
   else renderHome();
   window.scrollTo(0, 0);
@@ -67,6 +72,7 @@ function renderHome() {
     ${voice ? '' : '<p class="notice">Pas de voix coréenne détectée. Android : Paramètres → Synthèse vocale → Google → Installer les données vocales → Coréen.</p>'}
     <section class="units">
       ${units.map(u => `<a class="unit" href="#/unit/${u.id}"><span class="ko">${esc(u.icon)}</span><div><b>${esc(u.title)}</b><small>${u.lessons.filter(l => lessonDone(l, state.cards)).length}/${u.lessons.length} leçons</small></div></a>`).join('')}
+      <a class="unit" href="#/games"><span class="ko">🎮</span><div><b>Jeux</b><small>Syllabes, frappe, dictée, phrases à trous</small></div></a>
       <a class="unit" href="#/cards"><span class="ko">🃏</span><div><b>Mes cartes</b><small>${Object.keys(state.cards).filter(id => byId[id]).length} mots vus · flashcards</small></div></a>
       <a class="unit" href="#/field"><span class="ko">💬</span><div><b>Sur le terrain</b><small>Phrases à montrer ou faire écouter</small></div></a>
     </section>`;
@@ -317,6 +323,182 @@ function renderSummary() {
   session = null;
 }
 
+// --- games ---
+const GAMES = {
+  assemble: { title: 'Assemble la syllabe', icon: '🧩', desc: 'Touche les lettres dans l\'ordre du clavier' },
+  flash: { title: 'Frappe éclair', icon: '⚡', desc: '60 s pour taper un max de mots' },
+  dictee: { title: 'Dictée', icon: '🎧', desc: 'Écoute et écris', voice: true },
+  blanks: { title: 'Phrases à trous', icon: '🧱', desc: 'Complète la phrase en tapant' },
+};
+const FLASH_SECONDS = 60;
+const TYPE_INPUT = '<input type="text" id="typed" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="한글로…">';
+let game = null;
+
+const stopGame = () => { clearInterval(game?.timer); game = null; };
+const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
+const syllables = ko => [...ko].filter(isSyllable).length;
+
+function renderGames() {
+  app.innerHTML = header('Jeux', '#/') + `<section class="units">${Object.entries(GAMES).map(([id, g]) => {
+    const off = g.voice && !voice;
+    return `<a class="unit${off ? ' off' : ''}" href="${off ? '#/games' : `#/game/${id}`}"><span class="ko">${g.icon}</span><div><b>${esc(g.title)}</b><small>${off ? 'Nécessite la voix coréenne' : esc(g.desc)} · 🏆 ${state.best[id] ?? 0}</small></div></a>`;
+  }).join('')}</section>
+  <p class="notice">Pour taper : Gboard → Langues → Coréen, disposition 2-Beolsik.</p>`;
+}
+
+function renderGame(id) {
+  stopGame();
+  if (!GAMES[id] || (GAMES[id].voice && !voice)) return renderGames();
+  game = { id, score: 0, round: 0, rounds: 10 };
+  if (id === 'flash') {
+    game.timeLeft = FLASH_SECONDS;
+    game.timer = setInterval(tick, 1000);
+  }
+  nextRound();
+}
+
+function tick() {
+  game.timeLeft--;
+  const bar = $('.bar div');
+  if (bar) bar.style.width = `${(game.timeLeft / FLASH_SECONDS) * 100}%`;
+  if (game.timeLeft <= 0) endGame();
+}
+
+function nextRound() {
+  if (game.id !== 'flash' && game.round >= game.rounds) return endGame();
+  game.round++;
+  ROUNDS[game.id]();
+}
+
+function play(inner) {
+  const g = game;
+  const progress = g.id === 'flash' ? g.timeLeft / FLASH_SECONDS : (g.round - 1) / g.rounds;
+  app.innerHTML = `<header class="top"><a href="#/games" class="icon-btn" aria-label="Quitter">✕</a>
+      <div class="bar"><div style="width:${progress * 100}%"></div></div><span class="combo" id="score">${g.score} pts</span></header>
+    <main class="card-area">${inner}</main><footer id="feedback"></footer>`;
+}
+
+function addPoints(points) {
+  game.score += points;
+  $('#score').textContent = `${game.score} pts`;
+}
+
+function roundDone(ok, points, html) {
+  const g = game;
+  addPoints(points);
+  buzz(ok ? 30 : [60, 40, 60]);
+  app.querySelectorAll('.card-area input, .card-area .row2 button').forEach(e => { e.disabled = true; });
+  const fb = $('#feedback');
+  fb.className = ok ? 'good' : 'bad';
+  fb.innerHTML = `<b>${ok ? `+${points} pts` : 'Raté…'}</b>${html}${ok ? '' : '<button class="primary" id="next">Continuer</button>'}`;
+  if (ok) setTimeout(() => { if (game === g) nextRound(); }, 1200);
+  else $('#next').onclick = nextRound;
+}
+
+// Shared by dictée and phrases à trous: type, 💡 reveals the answer for half points.
+function bindTyping(answer, check, reveal, spoken) {
+  const input = $('#typed');
+  let hinted = false;
+  const submit = () => {
+    if (!input.value.trim() || input.disabled) return;
+    const ok = check(input.value);
+    const pts = ok ? (hinted ? Math.ceil(syllables(answer) / 2) : syllables(answer)) * 5 : 0;
+    roundDone(ok, pts, reveal);
+    if (spoken) speak(spoken);
+  };
+  $('#hint').onclick = () => { hinted = true; $('#keys').textContent = `${answer} · ${keystrokes(answer).join(' ')}`; input.focus(); };
+  $('#check').onclick = submit;
+  input.onkeydown = e => { if (e.key === 'Enter') submit(); };
+  input.focus();
+}
+const typingControls = `${TYPE_INPUT}<div class="row2"><button class="secondary" id="hint">💡 Indice</button><button class="primary" id="check">Vérifier</button></div><p class="note ko" id="keys"></p>`;
+
+const ROUNDS = {
+  assemble() {
+    const r = assembleRound(game.pool ??= syllablePool(units));
+    let pos = 0;
+    let missed = false;
+    play(`<p class="label">Assemble la syllabe</p><div class="flash"><p class="xl">${esc(r.rom)}</p></div>
+      ${voice ? '<button class="icon-btn audio" id="snd" aria-label="Écouter">🔊</button>' : ''}
+      <div class="picked ko" id="picked"></div>
+      <div class="tiles ko">${r.tiles.map((t, i) => `<button class="tile" data-i="${i}">${t}</button>`).join('')}</div>`);
+    speak(r.syllable);
+    if (voice) $('#snd').onclick = () => speak(r.syllable);
+    app.querySelector('.tiles').onclick = e => {
+      const b = e.target.closest('.tile');
+      if (!b || pos === r.keys.length) return;
+      if (b.textContent !== r.keys[pos]) {
+        missed = true;
+        buzz(80);
+        b.classList.remove('wrong');
+        void b.offsetWidth; // restart the shake animation
+        b.classList.add('wrong');
+        return;
+      }
+      b.disabled = true;
+      pos++;
+      $('#picked').textContent = r.keys.slice(0, pos).join(' ');
+      if (pos === r.keys.length) {
+        speak(r.syllable);
+        roundDone(true, missed ? 5 : 10, `<p class="ko xl">${r.syllable}</p><p>${r.keys.join(' + ')}</p>`);
+      }
+    };
+  },
+
+  // One persistent input: re-rendering per word would close the phone keyboard.
+  flash() {
+    const it = pickOne(game.pool ??= typingPool(units.flatMap(u => u.items), state.cards));
+    let hinted = false;
+    if (game.round === 1) {
+      play(`<p class="label">Tape ce mot</p><div class="flash" id="word"></div>${TYPE_INPUT}
+        <button class="secondary" id="hint">💡 Touches</button><p class="note ko" id="keys"></p>`);
+    }
+    $('#word').innerHTML = `<p class="ko ${size(it.ko)}">${esc(it.ko)}</p><p class="fr">${esc(it.fr)}</p>`;
+    $('#word').classList.remove('pop');
+    void $('#word').offsetWidth;
+    $('#word').classList.add('pop');
+    $('#keys').textContent = '';
+    const input = $('#typed');
+    input.value = '';
+    input.focus();
+    $('#hint').onclick = () => { hinted = true; $('#keys').textContent = keystrokes(it.ko).join(' '); input.focus(); };
+    input.oninput = () => {
+      if (!checkTyped(input.value, it)) return;
+      buzz(30);
+      addPoints(hinted ? Math.ceil(syllables(it.ko) / 2) : syllables(it.ko));
+      nextRound();
+    };
+  },
+
+  dictee() {
+    const it = pickOne(game.pool ??= typingPool(units.flatMap(u => u.items), state.cards));
+    play(`<p class="label">Écoute et écris</p><button class="play" id="snd" aria-label="Réécouter">🔊</button>${typingControls}`);
+    say(it);
+    $('#snd').onclick = () => say(it);
+    bindTyping(it.ko, v => checkTyped(v, it), `<p class="ko">${esc(it.ko)}</p><p class="rom">${esc(it.rom)}</p><p>${esc(it.fr)}</p>`);
+  },
+
+  blanks() {
+    const r = blankRound(patterns, Object.fromEntries(Object.entries(byId).map(([id, v]) => [id, v.item])));
+    play(`<p class="label">Complète en coréen</p><div class="flash"><p class="ko lg">${esc(r.prompt)}</p><p class="fr">${esc(r.fr)}</p></div>${typingControls}`);
+    bindTyping(r.noun.ko, v => checkTyped(v, r.noun) || checkTyped(v, { ko: r.full }), `<p class="ko">${esc(r.full)}</p><p>${esc(r.fr)}</p>`, r.full);
+  },
+};
+
+function endGame() {
+  if (!game) return;
+  const { id, score } = game;
+  stopGame();
+  const record = score > (state.best[id] ?? 0);
+  if (record) state.best[id] = score;
+  addXp(state, score, Date.now());
+  persist();
+  app.innerHTML = `<main class="summary"><p class="big-emoji">${record ? '🏆' : '🎉'}</p>
+    <h1>${record ? 'Nouveau record !' : 'Partie terminée'}</h1><p>${score} points · +${score} XP</p><p>Record : ${state.best[id] ?? 0}</p>
+    <button class="primary big" id="again">Rejouer</button><a class="secondary" href="#/games">Autres jeux</a></main>`;
+  $('#again').onclick = () => renderGame(id);
+}
+
 // --- boot ---
 async function boot() {
   navigator.storage?.persist?.();
@@ -324,6 +506,7 @@ async function boot() {
     const data = await Promise.all(UNIT_IDS.map(id => fetch(`content/${id}.json`).then(r => r.json())));
     units = data.map(u => ({ ...u, items: u.lessons.flatMap(l => l.items) }));
     for (const unit of units) for (const item of unit.items) byId[item.id] = { item, unit };
+    ({ patterns } = await fetch('content/patterns.json').then(r => r.json()));
     initVoice();
     window.addEventListener('hashchange', route);
     route();

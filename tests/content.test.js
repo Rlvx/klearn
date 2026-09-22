@@ -20,3 +20,11 @@ test('content is well-formed', () => {
     }
   }
 });
+test('pattern nouns exist in content', () => {
+  const ids = new Set(units.flatMap(u => u.lessons.flatMap(l => l.items.map(it => it.id))));
+  const { patterns } = JSON.parse(readFileSync(new URL('../content/patterns.json', import.meta.url), 'utf8'));
+  for (const p of patterns) {
+    assert.ok(p.ko.includes('{}') && p.fr.includes('{}'), p.id);
+    for (const id of p.nouns) assert.ok(ids.has(id), `${p.id}: unknown noun ${id}`);
+  }
+});

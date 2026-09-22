@@ -1,0 +1,20 @@
+{ "patterns": [
+  { "id": "want", "ko": "{} 주세요", "fr": "Je voudrais… {}", "nouns": [
+    "vo-bap", "vo-gogi", "vo-sogogi", "vo-dwaeji", "vo-dak", "vo-saengseon", "vo-yachae", "vo-gyeran", "vo-ramyeon",
+    "vo-bulgogi", "vo-samgyeopsal", "vo-tteokbokki", "vo-gimbap", "vo-chikin", "vo-naengmyeon", "vo-mandu",
+    "vo-mul", "vo-keopi", "vo-cha", "vo-maekju", "vo-soju", "vo-uyu", "vo-juseu",
+    "vo-pyo", "vo-gyotong", "vo-han-gae", "vo-du-gae", "vo-han-jan", "vo-du-jan", "vo-han-byeong"
+  ]},
+  { "id": "have", "ko": "{} 있어요?", "fr": "Vous avez… {} ?", "nouns": [
+    "vo-gyeran", "vo-ramyeon", "vo-gimbap", "vo-chikin", "vo-naengmyeon", "vo-mandu", "vo-tteokbokki",
+    "vo-mul", "vo-keopi", "vo-maekju", "vo-soju", "vo-uyu", "vo-juseu", "vo-pyo", "vo-gyotong"
+  ]},
+  { "id": "price", "ko": "{} 얼마예요?", "fr": "Combien coûte… {} ?", "nouns": [
+    "vo-bulgogi", "vo-samgyeopsal", "vo-tteokbokki", "vo-gimbap", "vo-chikin", "vo-naengmyeon", "vo-mandu",
+    "vo-keopi", "vo-maekju", "vo-soju", "vo-juseu", "vo-pyo", "vo-gyotong", "hg-w-icecream", "hg-w-banana"
+  ]},
+  { "id": "where", "ko": "{} 어디예요?", "fr": "Où est… {} ?", "nouns": [
+    "vo-yeok", "vo-gonghang", "vo-sikdang", "vo-kape", "vo-yakguk", "vo-byeongwon", "vo-eunhaeng", "vo-sijang",
+    "vo-chulgu", "vo-ipgu", "hg-w-toilet", "hg-w-store", "hg-w-hotel"
+  ]}
+]}
