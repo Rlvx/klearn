@@ -17,7 +17,7 @@
     { "id": "ph-again", "ko": "다시 한번 말해 주세요", "rom": "dasi hanbeon malhae juseyo", "fr": "Pouvez-vous répéter ?", "tiles": ["다시", "한번", "말해", "주세요"] },
     { "id": "ph-dunno", "ko": "몰라요", "rom": "mollayo", "fr": "Je ne sais pas" },
     { "id": "ph-got-it", "ko": "알겠어요", "rom": "algesseoyo", "fr": "Compris / D'accord" },
-    { "id": "ph-not-understood", "ko": "이해 못 했어요", "rom": "ihae mot haesseoyo", "fr": "Je n'ai pas compris", "tiles": ["이해", "못 했어요"] },
+    { "id": "ph-not-understood", "ko": "이해 못 했어요", "rom": "ihae motaesseoyo", "fr": "Je n'ai pas compris", "tiles": ["이해", "못 했어요"] },
     { "id": "ph-french", "ko": "저는 프랑스 사람이에요", "rom": "jeoneun peurangseu saramieyo", "fr": "Je suis français(e)", "tiles": ["저는", "프랑스", "사람이에요"] }
   ]},
   { "id": "ph-l3", "title": "Restaurant & café", "icon": "🍜", "items": [

@@ -23,7 +23,9 @@ export function buildQuestion(type, item, pool, rand = Math.random) {
     const picked = [];
     for (const p of shuffle(pool, rand)) {
       if (picked.length === 3) break;
-      if (p[key] !== item[key] && !picked.some(x => x[key] === p[key])) picked.push(p);
+      if (p[key] === item[key]) continue;
+      if (type === 'listen' && (p.say || p.ko) === (item.say || item.ko)) continue;
+      if (!picked.some(x => x[key] === p[key])) picked.push(p);
     }
     q.choices = shuffle([item, ...picked], rand);
   }

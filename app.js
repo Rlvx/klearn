@@ -41,6 +41,7 @@ function initVoice() {
 // --- routing ---
 function route() {
   const [, screen, arg] = location.hash.split('/');
+  if (screen !== 'session') session = null;
   if (screen === 'unit') renderUnit(arg);
   else if (screen === 'session') session ? renderSession() : (location.hash = '#/');
   else if (screen === 'field') renderField(arg);
@@ -299,12 +300,17 @@ function renderSummary() {
 
 // --- boot ---
 async function boot() {
-  const data = await Promise.all(UNIT_IDS.map(id => fetch(`content/${id}.json`).then(r => r.json())));
-  units = data.map(u => ({ ...u, items: u.lessons.flatMap(l => l.items) }));
-  for (const unit of units) for (const item of unit.items) byId[item.id] = { item, unit };
-  initVoice();
-  window.addEventListener('hashchange', route);
-  route();
+  navigator.storage?.persist?.();
+  try {
+    const data = await Promise.all(UNIT_IDS.map(id => fetch(`content/${id}.json`).then(r => r.json())));
+    units = data.map(u => ({ ...u, items: u.lessons.flatMap(l => l.items) }));
+    for (const unit of units) for (const item of unit.items) byId[item.id] = { item, unit };
+    initVoice();
+    window.addEventListener('hashchange', route);
+    route();
+  } catch {
+    app.innerHTML = '<p class="notice">Impossible de charger le contenu. Connecte-toi à Internet une première fois puis recharge.</p>';
+  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 }
 

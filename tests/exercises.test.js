@@ -33,6 +33,21 @@ test('typed answers accept decomposed Hangul', () => {
   assert.ok(checkTyped('가'.normalize('NFD'), { ko: '가' }));
 });
 
+test('listen distractors never sound identical to the item', () => {
+  const item = { id: 'g', ko: 'ㄱ', say: '가', fr: 'g' };
+  const listenPool = [
+    item,
+    { id: 'ga', ko: '가', fr: 'ga' },
+    { id: 'na', ko: '나', fr: 'na' },
+    { id: 'da', ko: '다', fr: 'da' },
+    { id: 'ra', ko: '라', fr: 'ra' },
+  ];
+  for (let i = 0; i < 50; i++) {
+    const q = buildQuestion('listen', item, listenPool);
+    assert.ok(!q.choices.some(c => c.id === 'ga'));
+  }
+});
+
 test('tiles must be in order', () => {
   const it = { tiles: ['이거', '주세요'] };
   assert.ok(checkTiles(['이거', '주세요'], it));
