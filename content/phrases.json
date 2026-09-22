@@ -1,0 +1,84 @@
+{ "id": "phrases", "title": "Phrases", "icon": "말", "lessons": [
+  { "id": "ph-l1", "title": "Essentiels", "icon": "👋", "items": [
+    { "id": "ph-hello", "ko": "안녕하세요", "rom": "annyeonghaseyo", "fr": "Bonjour" },
+    { "id": "ph-thanks", "ko": "감사합니다", "rom": "gamsahamnida", "fr": "Merci" },
+    { "id": "ph-yes", "ko": "네", "rom": "ne", "fr": "Oui" },
+    { "id": "ph-no", "ko": "아니요", "rom": "aniyo", "fr": "Non" },
+    { "id": "ph-sorry", "ko": "죄송합니다", "rom": "joesonghamnida", "fr": "Pardon / Désolé" },
+    { "id": "ph-excuse", "ko": "저기요", "rom": "jeogiyo", "fr": "Excusez-moi (pour appeler)" },
+    { "id": "ph-ok", "ko": "괜찮아요", "rom": "gwaenchanayo", "fr": "Ça va / Pas de souci" },
+    { "id": "ph-bye-stay", "ko": "안녕히 계세요", "rom": "annyeonghi gyeseyo", "fr": "Au revoir (à qui reste)", "tiles": ["안녕히", "계세요"] },
+    { "id": "ph-bye-go", "ko": "안녕히 가세요", "rom": "annyeonghi gaseyo", "fr": "Au revoir (à qui part)", "tiles": ["안녕히", "가세요"] }
+  ]},
+  { "id": "ph-l2", "title": "Se comprendre", "icon": "🗣️", "items": [
+    { "id": "ph-no-korean", "ko": "한국어 못해요", "rom": "hangugeo motaeyo", "fr": "Je ne parle pas coréen", "tiles": ["한국어", "못해요"] },
+    { "id": "ph-english", "ko": "영어 할 수 있어요?", "rom": "yeongeo hal su isseoyo?", "fr": "Vous parlez anglais ?", "tiles": ["영어", "할 수", "있어요?"] },
+    { "id": "ph-slowly", "ko": "천천히 말해 주세요", "rom": "cheoncheonhi malhae juseyo", "fr": "Parlez lentement, s'il vous plaît", "tiles": ["천천히", "말해", "주세요"] },
+    { "id": "ph-again", "ko": "다시 한번 말해 주세요", "rom": "dasi hanbeon malhae juseyo", "fr": "Pouvez-vous répéter ?", "tiles": ["다시", "한번", "말해", "주세요"] },
+    { "id": "ph-dunno", "ko": "몰라요", "rom": "mollayo", "fr": "Je ne sais pas" },
+    { "id": "ph-got-it", "ko": "알겠어요", "rom": "algesseoyo", "fr": "Compris / D'accord" },
+    { "id": "ph-not-understood", "ko": "이해 못 했어요", "rom": "ihae mot haesseoyo", "fr": "Je n'ai pas compris", "tiles": ["이해", "못 했어요"] },
+    { "id": "ph-french", "ko": "저는 프랑스 사람이에요", "rom": "jeoneun peurangseu saramieyo", "fr": "Je suis français(e)", "tiles": ["저는", "프랑스", "사람이에요"] }
+  ]},
+  { "id": "ph-l3", "title": "Restaurant & café", "icon": "🍜", "items": [
+    { "id": "ph-menu", "ko": "메뉴 주세요", "rom": "menyu juseyo", "fr": "Le menu, s'il vous plaît", "tiles": ["메뉴", "주세요"] },
+    { "id": "ph-this-please", "ko": "이거 주세요", "rom": "igeo juseyo", "fr": "Je voudrais ça", "tiles": ["이거", "주세요"] },
+    { "id": "ph-water", "ko": "물 주세요", "rom": "mul juseyo", "fr": "De l'eau, s'il vous plaît", "tiles": ["물", "주세요"] },
+    { "id": "ph-americano", "ko": "아이스 아메리카노 한 잔 주세요", "rom": "aiseu amerikano han jan juseyo", "fr": "Un americano glacé, s'il vous plaît", "tiles": ["아이스", "아메리카노", "한 잔", "주세요"] },
+    { "id": "ph-delicious", "ko": "맛있어요", "rom": "masisseoyo", "fr": "C'est délicieux" },
+    { "id": "ph-bill", "ko": "계산해 주세요", "rom": "gyesanhae juseyo", "fr": "L'addition, s'il vous plaît", "tiles": ["계산해", "주세요"] },
+    { "id": "ph-two-people", "ko": "두 명이에요", "rom": "du myeongieyo", "fr": "Nous sommes deux", "tiles": ["두", "명이에요"] },
+    { "id": "ph-not-spicy", "ko": "안 맵게 해 주세요", "rom": "an maepge hae juseyo", "fr": "Pas épicé, s'il vous plaît", "tiles": ["안", "맵게", "해", "주세요"] },
+    { "id": "ph-takeaway", "ko": "포장해 주세요", "rom": "pojanghae juseyo", "fr": "À emporter, s'il vous plaît", "tiles": ["포장해", "주세요"] },
+    { "id": "ph-eat-here", "ko": "여기서 먹을게요", "rom": "yeogiseo meogeulgeyo", "fr": "Je mange sur place", "tiles": ["여기서", "먹을게요"] }
+  ]},
+  { "id": "ph-l4", "title": "Shopping", "icon": "🛍️", "items": [
+    { "id": "ph-how-much", "ko": "이거 얼마예요?", "rom": "igeo eolmayeyo?", "fr": "Combien ça coûte ?", "tiles": ["이거", "얼마예요?"] },
+    { "id": "ph-too-expensive", "ko": "너무 비싸요", "rom": "neomu bissayo", "fr": "C'est trop cher", "tiles": ["너무", "비싸요"] },
+    { "id": "ph-discount", "ko": "깎아 주세요", "rom": "kkakka juseyo", "fr": "Vous me faites un prix ?", "tiles": ["깎아", "주세요"] },
+    { "id": "ph-card-ok", "ko": "카드 돼요?", "rom": "kadeu dwaeyo?", "fr": "Je peux payer par carte ?", "tiles": ["카드", "돼요?"] },
+    { "id": "ph-cash", "ko": "현금으로 할게요", "rom": "hyeongeumeuro halgeyo", "fr": "Je paie en espèces", "tiles": ["현금으로", "할게요"] },
+    { "id": "ph-no-bag", "ko": "봉투 필요 없어요", "rom": "bongtu piryo eopseoyo", "fr": "Pas besoin de sac", "tiles": ["봉투", "필요", "없어요"] },
+    { "id": "ph-just-looking", "ko": "그냥 볼게요", "rom": "geunyang bolgeyo", "fr": "Je regarde seulement", "tiles": ["그냥", "볼게요"] },
+    { "id": "ph-have-this", "ko": "이거 있어요?", "rom": "igeo isseoyo?", "fr": "Vous avez ça ?", "tiles": ["이거", "있어요?"] }
+  ]},
+  { "id": "ph-l5", "title": "Se déplacer", "icon": "🚇", "items": [
+    { "id": "ph-toilet", "ko": "화장실 어디예요?", "rom": "hwajangsil eodiyeyo?", "fr": "Où sont les toilettes ?", "tiles": ["화장실", "어디예요?"] },
+    { "id": "ph-metro-where", "ko": "지하철역 어디예요?", "rom": "jihacheollyeok eodiyeyo?", "fr": "Où est la station de métro ?", "tiles": ["지하철역", "어디예요?"] },
+    { "id": "ph-go-here", "ko": "여기로 가 주세요", "rom": "yeogiro ga juseyo", "fr": "Emmenez-moi ici (en montrant l'adresse)", "tiles": ["여기로", "가", "주세요"] },
+    { "id": "ph-stop-here", "ko": "여기서 세워 주세요", "rom": "yeogiseo sewo juseyo", "fr": "Arrêtez-vous ici, s'il vous plaît", "tiles": ["여기서", "세워", "주세요"] },
+    { "id": "ph-how-long", "ko": "얼마나 걸려요?", "rom": "eolmana geollyeoyo?", "fr": "Combien de temps ça prend ?", "tiles": ["얼마나", "걸려요?"] },
+    { "id": "ph-bus-goes", "ko": "이 버스 명동 가요?", "rom": "i beoseu myeongdong gayo?", "fr": "Ce bus va à Myeongdong ?", "tiles": ["이", "버스", "명동", "가요?"] },
+    { "id": "ph-one-ticket", "ko": "표 한 장 주세요", "rom": "pyo han jang juseyo", "fr": "Un billet, s'il vous plaît", "tiles": ["표", "한 장", "주세요"] },
+    { "id": "ph-where-is-this", "ko": "여기 어디예요?", "rom": "yeogi eodiyeyo?", "fr": "Où est-ce ? (en montrant la carte)", "tiles": ["여기", "어디예요?"] }
+  ]},
+  { "id": "ph-l6", "title": "Hôtel", "icon": "🏨", "items": [
+    { "id": "ph-checkin", "ko": "체크인 할게요", "rom": "chekeuin halgeyo", "fr": "Je voudrais faire le check-in", "tiles": ["체크인", "할게요"] },
+    { "id": "ph-booked", "ko": "예약했어요", "rom": "yeyakaesseoyo", "fr": "J'ai une réservation" },
+    { "id": "ph-wifi", "ko": "와이파이 비밀번호가 뭐예요?", "rom": "waipai bimilbeonhoga mwoyeyo?", "fr": "Quel est le mot de passe wifi ?", "tiles": ["와이파이", "비밀번호가", "뭐예요?"] },
+    { "id": "ph-luggage", "ko": "짐 맡겨도 돼요?", "rom": "jim matgyeodo dwaeyo?", "fr": "Je peux laisser mes bagages ?", "tiles": ["짐", "맡겨도", "돼요?"] },
+    { "id": "ph-checkout-time", "ko": "몇 시에 체크아웃이에요?", "rom": "myeot sie chekeuausieyo?", "fr": "Le check-out est à quelle heure ?", "tiles": ["몇 시에", "체크아웃이에요?"] },
+    { "id": "ph-towels", "ko": "수건 더 주세요", "rom": "sugeon deo juseyo", "fr": "Plus de serviettes, s'il vous plaît", "tiles": ["수건", "더", "주세요"] }
+  ]},
+  { "id": "ph-l7", "title": "Santé & urgences", "icon": "🚑", "items": [
+    { "id": "ph-help", "ko": "도와주세요!", "rom": "dowajuseyo!", "fr": "Au secours ! / Aidez-moi !" },
+    { "id": "ph-hospital", "ko": "병원 어디예요?", "rom": "byeongwon eodiyeyo?", "fr": "Où est l'hôpital ?", "tiles": ["병원", "어디예요?"] },
+    { "id": "ph-pharmacy", "ko": "약국 어디예요?", "rom": "yakguk eodiyeyo?", "fr": "Où est la pharmacie ?", "tiles": ["약국", "어디예요?"] },
+    { "id": "ph-hurts", "ko": "여기가 아파요", "rom": "yeogiga apayo", "fr": "J'ai mal ici", "tiles": ["여기가", "아파요"] },
+    { "id": "ph-allergy", "ko": "알레르기가 있어요", "rom": "allereugiga isseoyo", "fr": "J'ai une allergie", "tiles": ["알레르기가", "있어요"] },
+    { "id": "ph-peanut", "ko": "땅콩 알레르기가 있어요", "rom": "ttangkong allereugiga isseoyo", "fr": "Je suis allergique aux cacahuètes", "tiles": ["땅콩", "알레르기가", "있어요"] },
+    { "id": "ph-police", "ko": "경찰 불러 주세요", "rom": "gyeongchal bulleo juseyo", "fr": "Appelez la police", "tiles": ["경찰", "불러", "주세요"] },
+    { "id": "ph-lost", "ko": "길을 잃었어요", "rom": "gireul ireosseoyo", "fr": "Je suis perdu(e)", "tiles": ["길을", "잃었어요"] }
+  ]},
+  { "id": "ph-l8", "title": "Rencontres", "icon": "🥂", "items": [
+    { "id": "ph-name", "ko": "이름이 뭐예요?", "rom": "ireumi mwoyeyo?", "fr": "Comment tu t'appelles ?", "tiles": ["이름이", "뭐예요?"] },
+    { "id": "ph-nice-meet", "ko": "만나서 반가워요", "rom": "mannaseo bangawoyo", "fr": "Enchanté(e)", "tiles": ["만나서", "반가워요"] },
+    { "id": "ph-cheers", "ko": "건배!", "rom": "geonbae!", "fr": "Santé ! (trinquer)" },
+    { "id": "ph-good", "ko": "좋아요", "rom": "joayo", "fr": "C'est bien / J'aime" },
+    { "id": "ph-photo-me", "ko": "사진 찍어 주세요", "rom": "sajin jjigeo juseyo", "fr": "Vous pouvez me prendre en photo ?", "tiles": ["사진", "찍어", "주세요"] },
+    { "id": "ph-photo-ok", "ko": "사진 찍어도 돼요?", "rom": "sajin jjigeodo dwaeyo?", "fr": "Je peux prendre une photo ?", "tiles": ["사진", "찍어도", "돼요?"] },
+    { "id": "ph-awesome", "ko": "대박!", "rom": "daebak!", "fr": "Génial ! / Incroyable !" },
+    { "id": "ph-before-meal", "ko": "잘 먹겠습니다", "rom": "jal meokgetseumnida", "fr": "Bon appétit (avant de manger)", "tiles": ["잘", "먹겠습니다"] },
+    { "id": "ph-after-meal", "ko": "잘 먹었습니다", "rom": "jal meogeotseumnida", "fr": "Merci pour le repas", "tiles": ["잘", "먹었습니다"] }
+  ]}
+]}

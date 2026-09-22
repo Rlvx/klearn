@@ -1,0 +1,96 @@
+{ "id": "hangul", "title": "Hangeul", "icon": "한", "lessons": [
+  { "id": "hg-l1", "title": "Consonnes 1", "items": [
+    { "id": "hg-g", "ko": "ㄱ", "rom": "g/k", "fr": "g / k", "say": "가", "note": "g doux en début de mot, k en finale" },
+    { "id": "hg-n", "ko": "ㄴ", "rom": "n", "fr": "n", "say": "나" },
+    { "id": "hg-d", "ko": "ㄷ", "rom": "d/t", "fr": "d / t", "say": "다" },
+    { "id": "hg-r", "ko": "ㄹ", "rom": "r/l", "fr": "r / l", "say": "라", "note": "r léger entre voyelles, l en finale" },
+    { "id": "hg-m", "ko": "ㅁ", "rom": "m", "fr": "m", "say": "마" },
+    { "id": "hg-b", "ko": "ㅂ", "rom": "b/p", "fr": "b / p", "say": "바" },
+    { "id": "hg-s", "ko": "ㅅ", "rom": "s", "fr": "s", "say": "사", "note": "devient « ch » devant i : 시 = chi" }
+  ]},
+  { "id": "hg-l2", "title": "Consonnes 2", "items": [
+    { "id": "hg-ng", "ko": "ㅇ", "rom": "-/ng", "fr": "muet / ng", "say": "아, 앙", "note": "muet en début de syllabe, ng en finale" },
+    { "id": "hg-j", "ko": "ㅈ", "rom": "j", "fr": "dj", "say": "자" },
+    { "id": "hg-ch", "ko": "ㅊ", "rom": "ch", "fr": "tch (soufflé)", "say": "차" },
+    { "id": "hg-k", "ko": "ㅋ", "rom": "k", "fr": "k (soufflé)", "say": "카" },
+    { "id": "hg-t", "ko": "ㅌ", "rom": "t", "fr": "t (soufflé)", "say": "타" },
+    { "id": "hg-p", "ko": "ㅍ", "rom": "p", "fr": "p (soufflé)", "say": "파" },
+    { "id": "hg-h", "ko": "ㅎ", "rom": "h", "fr": "h (expiré)", "say": "하" }
+  ]},
+  { "id": "hg-l3", "title": "Voyelles 1", "items": [
+    { "id": "hg-a", "ko": "ㅏ", "rom": "a", "fr": "a", "say": "아" },
+    { "id": "hg-eo", "ko": "ㅓ", "rom": "eo", "fr": "o ouvert (« or »)", "say": "어" },
+    { "id": "hg-o", "ko": "ㅗ", "rom": "o", "fr": "o fermé (« eau »)", "say": "오" },
+    { "id": "hg-u", "ko": "ㅜ", "rom": "u", "fr": "ou", "say": "우" },
+    { "id": "hg-eu", "ko": "ㅡ", "rom": "eu", "fr": "eu (lèvres étirées)", "say": "으" },
+    { "id": "hg-i", "ko": "ㅣ", "rom": "i", "fr": "i", "say": "이" }
+  ]},
+  { "id": "hg-l4", "title": "Voyelles 2", "items": [
+    { "id": "hg-ya", "ko": "ㅑ", "rom": "ya", "fr": "ya", "say": "야" },
+    { "id": "hg-yeo", "ko": "ㅕ", "rom": "yeo", "fr": "yo ouvert", "say": "여" },
+    { "id": "hg-yo", "ko": "ㅛ", "rom": "yo", "fr": "yo fermé", "say": "요" },
+    { "id": "hg-yu", "ko": "ㅠ", "rom": "yu", "fr": "you", "say": "유" },
+    { "id": "hg-ae", "ko": "ㅐ", "rom": "ae", "fr": "è", "say": "애" },
+    { "id": "hg-e", "ko": "ㅔ", "rom": "e", "fr": "é", "say": "에", "note": "ㅐ et ㅔ se prononcent presque pareil aujourd'hui" },
+    { "id": "hg-yae", "ko": "ㅒ", "rom": "yae", "fr": "yè", "say": "얘" },
+    { "id": "hg-ye", "ko": "ㅖ", "rom": "ye", "fr": "yé", "say": "예" }
+  ]},
+  { "id": "hg-l5", "title": "Syllabes", "items": [
+    { "id": "hg-s-ga", "ko": "가", "rom": "ga", "fr": "ga", "note": "consonne + voyelle verticale côte à côte" },
+    { "id": "hg-s-no", "ko": "노", "rom": "no", "fr": "no", "note": "voyelle horizontale sous la consonne" },
+    { "id": "hg-s-du", "ko": "두", "rom": "du", "fr": "dou" },
+    { "id": "hg-s-ri", "ko": "리", "rom": "ri", "fr": "ri" },
+    { "id": "hg-s-meo", "ko": "머", "rom": "meo", "fr": "mo (ouvert)" },
+    { "id": "hg-s-bo", "ko": "보", "rom": "bo", "fr": "bo" },
+    { "id": "hg-s-su", "ko": "수", "rom": "su", "fr": "sou" },
+    { "id": "hg-s-a", "ko": "아", "rom": "a", "fr": "a (ㅇ muet)" },
+    { "id": "hg-s-jeo", "ko": "저", "rom": "jeo", "fr": "djo (ouvert)" },
+    { "id": "hg-s-ha", "ko": "하", "rom": "ha", "fr": "ha" }
+  ]},
+  { "id": "hg-l6", "title": "Consonnes doubles", "items": [
+    { "id": "hg-kk", "ko": "ㄲ", "rom": "kk", "fr": "k tendu", "say": "까", "note": "gorge serrée, sans souffle" },
+    { "id": "hg-tt", "ko": "ㄸ", "rom": "tt", "fr": "t tendu", "say": "따" },
+    { "id": "hg-pp", "ko": "ㅃ", "rom": "pp", "fr": "p tendu", "say": "빠" },
+    { "id": "hg-ss", "ko": "ㅆ", "rom": "ss", "fr": "s appuyé", "say": "싸" },
+    { "id": "hg-jj", "ko": "ㅉ", "rom": "jj", "fr": "tj tendu", "say": "짜" }
+  ]},
+  { "id": "hg-l7", "title": "Voyelles composées", "items": [
+    { "id": "hg-wa", "ko": "ㅘ", "rom": "wa", "fr": "wa", "say": "와", "note": "ㅗ + ㅏ" },
+    { "id": "hg-wo", "ko": "ㅝ", "rom": "wo", "fr": "wo (ouvert)", "say": "워", "note": "ㅜ + ㅓ" },
+    { "id": "hg-oe", "ko": "ㅚ", "rom": "oe", "fr": "wé (oe)", "say": "외" },
+    { "id": "hg-wi", "ko": "ㅟ", "rom": "wi", "fr": "oui", "say": "위" },
+    { "id": "hg-ui", "ko": "ㅢ", "rom": "ui", "fr": "eu-i", "say": "의" },
+    { "id": "hg-wae", "ko": "ㅙ", "rom": "wae", "fr": "wè", "say": "왜" },
+    { "id": "hg-we", "ko": "ㅞ", "rom": "we", "fr": "wé (we)", "say": "웨" }
+  ]},
+  { "id": "hg-l8", "title": "Consonnes finales (batchim)", "items": [
+    { "id": "hg-b-k", "ko": "책", "rom": "chaek", "fr": "livre — finale k", "note": "une consonne sous la syllabe se prononce à la fin" },
+    { "id": "hg-b-n", "ko": "산", "rom": "san", "fr": "montagne — finale n" },
+    { "id": "hg-b-t", "ko": "옷", "rom": "ot", "fr": "vêtement — finale t", "note": "ㅅ ㅈ ㅊ ㅌ ㅎ en finale sonnent tous t" },
+    { "id": "hg-b-l", "ko": "물", "rom": "mul", "fr": "eau — finale l" },
+    { "id": "hg-b-m", "ko": "밤", "rom": "bam", "fr": "nuit — finale m" },
+    { "id": "hg-b-p", "ko": "밥", "rom": "bap", "fr": "riz — finale p" },
+    { "id": "hg-b-ng", "ko": "강", "rom": "gang", "fr": "rivière — finale ng" }
+  ]},
+  { "id": "hg-l9", "title": "Lire des mots 1", "items": [
+    { "id": "hg-w-coffee", "ko": "커피", "rom": "keopi", "fr": "café" },
+    { "id": "hg-w-taxi", "ko": "택시", "rom": "taeksi", "fr": "taxi" },
+    { "id": "hg-w-hotel", "ko": "호텔", "rom": "hotel", "fr": "hôtel" },
+    { "id": "hg-w-bus", "ko": "버스", "rom": "beoseu", "fr": "bus" },
+    { "id": "hg-w-cola", "ko": "콜라", "rom": "kolla", "fr": "cola" },
+    { "id": "hg-w-pizza", "ko": "피자", "rom": "pija", "fr": "pizza" },
+    { "id": "hg-w-camera", "ko": "카메라", "rom": "kamera", "fr": "appareil photo" },
+    { "id": "hg-w-icecream", "ko": "아이스크림", "rom": "aiseukeurim", "fr": "glace" },
+    { "id": "hg-w-banana", "ko": "바나나", "rom": "banana", "fr": "banane" }
+  ]},
+  { "id": "hg-l10", "title": "Lire des mots 2", "items": [
+    { "id": "hg-w-seoul", "ko": "서울", "rom": "Seoul", "fr": "Séoul" },
+    { "id": "hg-w-busan", "ko": "부산", "rom": "Busan", "fr": "Busan" },
+    { "id": "hg-w-korea", "ko": "한국", "rom": "hanguk", "fr": "Corée" },
+    { "id": "hg-w-kimchi", "ko": "김치", "rom": "gimchi", "fr": "kimchi" },
+    { "id": "hg-w-bibimbap", "ko": "비빔밥", "rom": "bibimbap", "fr": "bibimbap" },
+    { "id": "hg-w-metro", "ko": "지하철", "rom": "jihacheol", "fr": "métro" },
+    { "id": "hg-w-store", "ko": "편의점", "rom": "pyeonuijeom", "fr": "supérette" },
+    { "id": "hg-w-toilet", "ko": "화장실", "rom": "hwajangsil", "fr": "toilettes" }
+  ]}
+]}

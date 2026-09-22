@@ -1,0 +1,159 @@
+{ "id": "vocab", "title": "Vocabulaire", "icon": "단", "lessons": [
+  { "id": "vo-l1", "title": "Nombres sino-coréens 1–10", "items": [
+    { "id": "vo-il", "ko": "일", "rom": "il", "fr": "1 (sino)", "note": "sino-coréens : prix, dates, minutes, numéros" },
+    { "id": "vo-i", "ko": "이", "rom": "i", "fr": "2 (sino)" },
+    { "id": "vo-sam", "ko": "삼", "rom": "sam", "fr": "3 (sino)" },
+    { "id": "vo-sa", "ko": "사", "rom": "sa", "fr": "4 (sino)" },
+    { "id": "vo-o", "ko": "오", "rom": "o", "fr": "5 (sino)" },
+    { "id": "vo-yuk", "ko": "육", "rom": "yuk", "fr": "6 (sino)" },
+    { "id": "vo-chil", "ko": "칠", "rom": "chil", "fr": "7 (sino)" },
+    { "id": "vo-pal", "ko": "팔", "rom": "pal", "fr": "8 (sino)" },
+    { "id": "vo-gu", "ko": "구", "rom": "gu", "fr": "9 (sino)" },
+    { "id": "vo-sip", "ko": "십", "rom": "sip", "fr": "10 (sino)" }
+  ]},
+  { "id": "vo-l2", "title": "Prix", "items": [
+    { "id": "vo-baek", "ko": "백", "rom": "baek", "fr": "100" },
+    { "id": "vo-cheon", "ko": "천", "rom": "cheon", "fr": "1 000" },
+    { "id": "vo-man", "ko": "만", "rom": "man", "fr": "10 000", "note": "le coréen compte par 10 000" },
+    { "id": "vo-won", "ko": "원", "rom": "won", "fr": "won (monnaie)" },
+    { "id": "vo-5000won", "ko": "오천 원", "rom": "ocheon won", "fr": "5 000 wons" },
+    { "id": "vo-10000won", "ko": "만 원", "rom": "man won", "fr": "10 000 wons" },
+    { "id": "vo-30000won", "ko": "삼만 원", "rom": "samman won", "fr": "30 000 wons" },
+    { "id": "vo-1500won", "ko": "천오백 원", "rom": "cheonobaek won", "fr": "1 500 wons" }
+  ]},
+  { "id": "vo-l3", "title": "Nombres natifs 1–10", "items": [
+    { "id": "vo-hana", "ko": "하나", "rom": "hana", "fr": "1 (natif)", "note": "natifs : compter des objets, des personnes, l'âge, l'heure" },
+    { "id": "vo-dul", "ko": "둘", "rom": "dul", "fr": "2 (natif)" },
+    { "id": "vo-set", "ko": "셋", "rom": "set", "fr": "3 (natif)" },
+    { "id": "vo-net", "ko": "넷", "rom": "net", "fr": "4 (natif)" },
+    { "id": "vo-daseot", "ko": "다섯", "rom": "daseot", "fr": "5 (natif)" },
+    { "id": "vo-yeoseot", "ko": "여섯", "rom": "yeoseot", "fr": "6 (natif)" },
+    { "id": "vo-ilgop", "ko": "일곱", "rom": "ilgop", "fr": "7 (natif)" },
+    { "id": "vo-yeodeol", "ko": "여덟", "rom": "yeodeol", "fr": "8 (natif)" },
+    { "id": "vo-ahop", "ko": "아홉", "rom": "ahop", "fr": "9 (natif)" },
+    { "id": "vo-yeol", "ko": "열", "rom": "yeol", "fr": "10 (natif)" }
+  ]},
+  { "id": "vo-l4", "title": "Compter", "items": [
+    { "id": "vo-han-gae", "ko": "한 개", "rom": "han gae", "fr": "1 objet", "note": "하나 devient 한 devant un compteur" },
+    { "id": "vo-du-gae", "ko": "두 개", "rom": "du gae", "fr": "2 objets" },
+    { "id": "vo-se-gae", "ko": "세 개", "rom": "se gae", "fr": "3 objets" },
+    { "id": "vo-han-myeong", "ko": "한 명", "rom": "han myeong", "fr": "1 personne" },
+    { "id": "vo-du-myeong", "ko": "두 명", "rom": "du myeong", "fr": "2 personnes" },
+    { "id": "vo-han-jan", "ko": "한 잔", "rom": "han jan", "fr": "1 verre / tasse" },
+    { "id": "vo-du-jan", "ko": "두 잔", "rom": "du jan", "fr": "2 verres / tasses" },
+    { "id": "vo-han-byeong", "ko": "한 병", "rom": "han byeong", "fr": "1 bouteille" }
+  ]},
+  { "id": "vo-l5", "title": "Aliments", "items": [
+    { "id": "vo-bap", "ko": "밥", "rom": "bap", "fr": "riz / repas" },
+    { "id": "vo-gogi", "ko": "고기", "rom": "gogi", "fr": "viande" },
+    { "id": "vo-sogogi", "ko": "소고기", "rom": "sogogi", "fr": "bœuf" },
+    { "id": "vo-dwaeji", "ko": "돼지고기", "rom": "dwaejigogi", "fr": "porc" },
+    { "id": "vo-dak", "ko": "닭고기", "rom": "dakgogi", "fr": "poulet (viande)" },
+    { "id": "vo-saengseon", "ko": "생선", "rom": "saengseon", "fr": "poisson" },
+    { "id": "vo-yachae", "ko": "야채", "rom": "yachae", "fr": "légumes" },
+    { "id": "vo-gyeran", "ko": "계란", "rom": "gyeran", "fr": "œuf" },
+    { "id": "vo-ramyeon", "ko": "라면", "rom": "ramyeon", "fr": "nouilles instantanées" }
+  ]},
+  { "id": "vo-l6", "title": "Plats", "items": [
+    { "id": "vo-bulgogi", "ko": "불고기", "rom": "bulgogi", "fr": "bulgogi (bœuf mariné)" },
+    { "id": "vo-samgyeopsal", "ko": "삼겹살", "rom": "samgyeopsal", "fr": "poitrine de porc grillée" },
+    { "id": "vo-tteokbokki", "ko": "떡볶이", "rom": "tteokbokki", "fr": "gâteaux de riz épicés" },
+    { "id": "vo-gimbap", "ko": "김밥", "rom": "gimbap", "fr": "gimbap (rouleau de riz)" },
+    { "id": "vo-chikin", "ko": "치킨", "rom": "chikin", "fr": "poulet frit" },
+    { "id": "vo-naengmyeon", "ko": "냉면", "rom": "naengmyeon", "fr": "nouilles froides" },
+    { "id": "vo-mandu", "ko": "만두", "rom": "mandu", "fr": "raviolis" },
+    { "id": "vo-guk", "ko": "국", "rom": "guk", "fr": "soupe" },
+    { "id": "vo-jjigae", "ko": "찌개", "rom": "jjigae", "fr": "ragoût" }
+  ]},
+  { "id": "vo-l7", "title": "Boissons", "items": [
+    { "id": "vo-mul", "ko": "물", "rom": "mul", "fr": "eau" },
+    { "id": "vo-keopi", "ko": "커피", "rom": "keopi", "fr": "café (boisson)" },
+    { "id": "vo-cha", "ko": "차", "rom": "cha", "fr": "thé", "note": "차 veut aussi dire « voiture »" },
+    { "id": "vo-maekju", "ko": "맥주", "rom": "maekju", "fr": "bière" },
+    { "id": "vo-soju", "ko": "소주", "rom": "soju", "fr": "soju" },
+    { "id": "vo-uyu", "ko": "우유", "rom": "uyu", "fr": "lait" },
+    { "id": "vo-juseu", "ko": "주스", "rom": "juseu", "fr": "jus" }
+  ]},
+  { "id": "vo-l8", "title": "Goûts", "items": [
+    { "id": "vo-maewoyo", "ko": "매워요", "rom": "maewoyo", "fr": "c'est épicé" },
+    { "id": "vo-darayo", "ko": "달아요", "rom": "darayo", "fr": "c'est sucré" },
+    { "id": "vo-jjayo", "ko": "짜요", "rom": "jjayo", "fr": "c'est salé" },
+    { "id": "vo-tteugeowoyo", "ko": "뜨거워요", "rom": "tteugeowoyo", "fr": "c'est brûlant" },
+    { "id": "vo-chagawoyo", "ko": "차가워요", "rom": "chagawoyo", "fr": "c'est froid" },
+    { "id": "vo-madeopseoyo", "ko": "맛없어요", "rom": "madeopseoyo", "fr": "ce n'est pas bon" }
+  ]},
+  { "id": "vo-l9", "title": "Lieux", "items": [
+    { "id": "vo-yeok", "ko": "역", "rom": "yeok", "fr": "gare / station" },
+    { "id": "vo-gonghang", "ko": "공항", "rom": "gonghang", "fr": "aéroport" },
+    { "id": "vo-sikdang", "ko": "식당", "rom": "sikdang", "fr": "restaurant" },
+    { "id": "vo-kape", "ko": "카페", "rom": "kape", "fr": "café (lieu)" },
+    { "id": "vo-yakguk", "ko": "약국", "rom": "yakguk", "fr": "pharmacie" },
+    { "id": "vo-byeongwon", "ko": "병원", "rom": "byeongwon", "fr": "hôpital" },
+    { "id": "vo-eunhaeng", "ko": "은행", "rom": "eunhaeng", "fr": "banque" },
+    { "id": "vo-sijang", "ko": "시장", "rom": "sijang", "fr": "marché" }
+  ]},
+  { "id": "vo-l10", "title": "Transports", "items": [
+    { "id": "vo-gicha", "ko": "기차", "rom": "gicha", "fr": "train" },
+    { "id": "vo-bihaenggi", "ko": "비행기", "rom": "bihaenggi", "fr": "avion" },
+    { "id": "vo-pyo", "ko": "표", "rom": "pyo", "fr": "billet" },
+    { "id": "vo-chulgu", "ko": "출구", "rom": "chulgu", "fr": "sortie" },
+    { "id": "vo-ipgu", "ko": "입구", "rom": "ipgu", "fr": "entrée" },
+    { "id": "vo-gyotong", "ko": "교통카드", "rom": "gyotongkadeu", "fr": "carte de transport (T-money)" },
+    { "id": "vo-hoseon", "ko": "호선", "rom": "hoseon", "fr": "ligne (de métro)", "note": "2호선 = ligne 2" },
+    { "id": "vo-garaeta", "ko": "갈아타요", "rom": "garatayo", "fr": "changer (de ligne)" }
+  ]},
+  { "id": "vo-l11", "title": "Directions", "items": [
+    { "id": "vo-yeogi", "ko": "여기", "rom": "yeogi", "fr": "ici" },
+    { "id": "vo-geogi", "ko": "거기", "rom": "geogi", "fr": "là (près de toi)" },
+    { "id": "vo-jeogi", "ko": "저기", "rom": "jeogi", "fr": "là-bas" },
+    { "id": "vo-oenjjok", "ko": "왼쪽", "rom": "oenjjok", "fr": "gauche" },
+    { "id": "vo-oreunjjok", "ko": "오른쪽", "rom": "oreunjjok", "fr": "droite" },
+    { "id": "vo-ap", "ko": "앞", "rom": "ap", "fr": "devant" },
+    { "id": "vo-dwi", "ko": "뒤", "rom": "dwi", "fr": "derrière" },
+    { "id": "vo-yeop", "ko": "옆", "rom": "yeop", "fr": "à côté" },
+    { "id": "vo-jikjin", "ko": "직진", "rom": "jikjin", "fr": "tout droit" }
+  ]},
+  { "id": "vo-l12", "title": "Le temps", "items": [
+    { "id": "vo-oneul", "ko": "오늘", "rom": "oneul", "fr": "aujourd'hui" },
+    { "id": "vo-naeil", "ko": "내일", "rom": "naeil", "fr": "demain" },
+    { "id": "vo-eoje", "ko": "어제", "rom": "eoje", "fr": "hier" },
+    { "id": "vo-jigeum", "ko": "지금", "rom": "jigeum", "fr": "maintenant" },
+    { "id": "vo-achim", "ko": "아침", "rom": "achim", "fr": "matin / petit-déjeuner" },
+    { "id": "vo-jeomsim", "ko": "점심", "rom": "jeomsim", "fr": "midi / déjeuner" },
+    { "id": "vo-jeonyeok", "ko": "저녁", "rom": "jeonyeok", "fr": "soir / dîner" },
+    { "id": "vo-si", "ko": "시", "rom": "si", "fr": "heure (3시 = 3 h)" },
+    { "id": "vo-bun", "ko": "분", "rom": "bun", "fr": "minute" }
+  ]},
+  { "id": "vo-l13", "title": "Verbes utiles", "items": [
+    { "id": "vo-gayo", "ko": "가요", "rom": "gayo", "fr": "aller" },
+    { "id": "vo-wayo", "ko": "와요", "rom": "wayo", "fr": "venir" },
+    { "id": "vo-meogeoyo", "ko": "먹어요", "rom": "meogeoyo", "fr": "manger" },
+    { "id": "vo-masyeoyo", "ko": "마셔요", "rom": "masyeoyo", "fr": "boire" },
+    { "id": "vo-bwayo", "ko": "봐요", "rom": "bwayo", "fr": "regarder / voir" },
+    { "id": "vo-sayo", "ko": "사요", "rom": "sayo", "fr": "acheter" },
+    { "id": "vo-isseoyo", "ko": "있어요", "rom": "isseoyo", "fr": "avoir / il y a" },
+    { "id": "vo-eopseoyo", "ko": "없어요", "rom": "eopseoyo", "fr": "ne pas avoir / il n'y a pas" },
+    { "id": "vo-joahaeyo", "ko": "좋아해요", "rom": "joahaeyo", "fr": "aimer (bien)" },
+    { "id": "vo-haeyo", "ko": "해요", "rom": "haeyo", "fr": "faire" }
+  ]},
+  { "id": "vo-l14", "title": "Adjectifs", "items": [
+    { "id": "vo-keoyo", "ko": "커요", "rom": "keoyo", "fr": "c'est grand" },
+    { "id": "vo-jagayo", "ko": "작아요", "rom": "jagayo", "fr": "c'est petit" },
+    { "id": "vo-bissayo", "ko": "비싸요", "rom": "bissayo", "fr": "c'est cher" },
+    { "id": "vo-ssayo", "ko": "싸요", "rom": "ssayo", "fr": "c'est bon marché" },
+    { "id": "vo-manayo", "ko": "많아요", "rom": "manayo", "fr": "il y en a beaucoup" },
+    { "id": "vo-gakkawoyo", "ko": "가까워요", "rom": "gakkawoyo", "fr": "c'est près" },
+    { "id": "vo-meoreoyo", "ko": "멀어요", "rom": "meoreoyo", "fr": "c'est loin" },
+    { "id": "vo-joayo", "ko": "좋아요", "rom": "joayo", "fr": "c'est bien" }
+  ]},
+  { "id": "vo-l15", "title": "Les gens", "items": [
+    { "id": "vo-jeo", "ko": "저", "rom": "jeo", "fr": "moi (poli)" },
+    { "id": "vo-chingu", "ko": "친구", "rom": "chingu", "fr": "ami(e)" },
+    { "id": "vo-namja", "ko": "남자", "rom": "namja", "fr": "homme" },
+    { "id": "vo-yeoja", "ko": "여자", "rom": "yeoja", "fr": "femme" },
+    { "id": "vo-ai", "ko": "아이", "rom": "ai", "fr": "enfant" },
+    { "id": "vo-ireum", "ko": "이름", "rom": "ireum", "fr": "nom / prénom" },
+    { "id": "vo-saram", "ko": "사람", "rom": "saram", "fr": "personne" },
+    { "id": "vo-ssi", "ko": "씨", "rom": "ssi", "fr": "M. / Mme (après le prénom)" }
+  ]}
+]}
