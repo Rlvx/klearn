@@ -266,7 +266,7 @@ function answer(ok) {
   const fb = $('#feedback');
   fb.className = ok ? 'good' : 'bad';
   fb.innerHTML = `<b>${ok ? (session.combo >= 5 ? `🔥 Combo ×${session.combo} ! +20 XP` : 'Bien joué ! +10 XP') : 'Pas tout à fait…'}</b>
-    ${ok ? '' : `<p class="ko">${esc(q.item.ko)}</p><p>${esc(q.item.fr)}</p>`}
+    ${ok ? '' : `<p class="ko">${esc(q.item.ko)}</p>${rom(q, true)}<p>${esc(q.item.fr)}</p>`}
     <button class="primary" id="next">Continuer</button>`;
   $('#next').onclick = advance;
   fb.scrollIntoView({ behavior: 'smooth', block: 'end' });

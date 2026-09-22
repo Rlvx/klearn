@@ -8,6 +8,7 @@
   :root { --bg: #14121f; --surface: #1f1c2e; --text: #f3f0ff; --muted: #a09bb5; --line: #2e2a42; }
 }
 * { box-sizing: border-box; margin: 0; }
+[hidden] { display: none !important; }
 html, body { background: var(--bg); color: var(--text); }
 body { font: 17px/1.45 system-ui, "Noto Sans KR", "Noto Sans CJK KR", sans-serif; -webkit-tap-highlight-color: transparent; }
 #app { max-width: 560px; min-height: 100dvh; margin: 0 auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
