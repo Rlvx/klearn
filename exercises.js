@@ -30,7 +30,6 @@ export function buildQuestion(type, item, pool, rand = Math.random) {
     q.choices = shuffle([item, ...picked], rand);
   }
   if (type === 'build') q.tiles = shuffle(item.tiles, rand);
-  if (type === 'flashcard') q.front = rand() < 0.5 ? 'ko' : 'fr';
   return q;
 }
 

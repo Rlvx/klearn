@@ -194,9 +194,10 @@ const VIEWS = {
     <button class="primary" id="check" disabled>Vérifier</button>`,
   shadow: q => `<p class="label">Écoute et répète à voix haute</p><div class="flash">${full(q)}</div>${audioBtn()}
     <div class="row2"><button class="secondary" data-ok="0">À revoir</button><button class="primary" data-ok="1">Bien dit</button></div>`,
-  flashcard: q => `<p class="label">Carte</p><div class="flash" id="card">${q.front === 'ko' ? `<p class="ko ${size(q.item.ko)}">${esc(q.item.ko)}</p>` : `<p class="fr">${esc(q.item.fr)}</p>`}</div>
-    <button class="primary" id="flip">Retourner</button>
-    <div class="grades" id="grades" hidden>${['Encore', 'Difficile', 'Bien', 'Facile'].map((l, g) => `<button class="g${g}" data-g="${g}">${l}</button>`).join('')}</div>`,
+  flashcard: q => `<p class="label">Carte · écris en coréen</p><div class="flash" id="card"><p class="fr">${esc(q.item.fr)}</p></div>${TYPE_INPUT}
+    <div class="row2" id="actions"><button class="secondary" id="dunno">Je ne sais pas</button><button class="primary" id="flip">Retourner</button></div>
+    <div class="grades" id="grades" hidden>${[['Difficile', 1], ['Bien', 2], ['Facile', 3]].map(([l, g]) => `<button class="g${g}" data-g="${g}">${l}</button>`).join('')}</div>
+    <button class="primary" id="next" hidden>Continuer</button>`,
 };
 
 function bindChoices(q) {
@@ -251,17 +252,36 @@ const BIND = {
       b.onclick = () => { $('.row2').remove(); answer(b.dataset.ok === '1'); };
     });
   },
+  // Type, then flip: right answer lets you grade Hard/Good/Easy, wrong answer counts as Again.
   flashcard: q => {
-    $('#flip').onclick = () => {
-      $('#card').innerHTML = full(q);
-      $('#flip').remove();
-      $('#grades').hidden = false;
+    const input = $('#typed');
+    const reveal = typed => {
+      const ok = checkTyped(typed, q.item) && typed.trim() !== '';
+      const card = $('#card');
+      input.disabled = true;
+      $('#actions').remove();
+      card.classList.add('flip', ok ? 'good' : 'bad');
+      setTimeout(() => {
+        card.innerHTML = `<span class="badge">${ok ? '✓' : '✗'}</span>${full(q)}${ok || !typed.trim() ? '' : `<p class="note">Tu as écrit : ${esc(typed)}</p>`}`;
+      }, 200);
       say(q.item);
+      if (ok) {
+        buzz(30);
+        $('#grades').hidden = false;
+      } else {
+        grade(0);
+        $('#next').hidden = false;
+        $('#next').onclick = advance;
+      }
     };
+    $('#flip').onclick = () => reveal(input.value);
+    $('#dunno').onclick = () => reveal('');
+    input.onkeydown = e => { if (e.key === 'Enter') reveal(input.value); };
     $('#grades').onclick = e => {
       const b = e.target.closest('[data-g]');
       if (b) { grade(+b.dataset.g); advance(); }
     };
+    input.focus();
   },
 };
 

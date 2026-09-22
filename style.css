@@ -77,7 +77,7 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .tile { padding: 8px 14px; font-size: 20px; background: var(--surface); border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 12px; }
 .tiles .tile:disabled { visibility: hidden; }
 
-.grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.grades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .grades button { padding: 12px 4px; border-radius: 14px; font-size: 14px; font-weight: 700; color: #fff; }
 .g0 { background: var(--bad); } .g1 { background: var(--warn); } .g2 { background: var(--good); } .g3 { background: var(--accent-2); }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -108,3 +108,11 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .chip.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 .flash.pop { animation: pop .2s ease; }
 .unit.off { opacity: .45; }
+.flash { position: relative; }
+.flash.flip { animation: flip .4s ease; }
+.flash.good { border-color: var(--good); box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 25%, transparent); }
+.flash.bad { border-color: var(--bad); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 25%, transparent); animation: flip .4s ease, shake .35s .4s; }
+@keyframes flip { 50% { transform: rotateY(90deg) scale(.96); } }
+.badge { position: absolute; top: 10px; right: 16px; font-size: 24px; font-weight: 800; }
+.flash.good .badge { color: var(--good); }
+.flash.bad .badge { color: var(--bad); }
