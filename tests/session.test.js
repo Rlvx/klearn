@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSession, lessonSession, lessonUnlocked } from '../session.js';
+import { buildSession, lessonSession, lessonUnlocked, cardSession } from '../session.js';
 import { DAY } from '../srs.js';
 
 const NOW = 1e12;
@@ -37,4 +37,10 @@ test('lesson session teaches unseen items, else quizzes the whole lesson', () =>
   const L = units[0].lessons[0];
   assert.deepEqual(lessonSession(L, { h1: card(0) }).map(s => s.kind + ':' + s.id), ['intro:h2', 'quiz:h2']);
   assert.deepEqual(lessonSession(L, { h1: card(0), h2: card(0) }).map(s => s.kind), ['quiz', 'quiz']);
+});
+
+test('card session: seen cards only, most overdue first, capped', () => {
+  const cards = { a: card(NOW + DAY), b: card(NOW - 10), c: card(NOW - 50) };
+  const q = cardSession(['a', 'b', 'c', 'unseen'], cards, 2);
+  assert.deepEqual(q.map(s => s.kind + ':' + s.id).sort(), ['card:b', 'card:c']);
 });

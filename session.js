@@ -31,3 +31,9 @@ export function lessonSession(lesson, cards, rand = Math.random) {
   const fresh = lesson.items.filter(it => !cards[it.id]).map(it => it.id);
   return fresh.length ? [...intro(fresh), ...quiz(fresh, rand)] : quiz(lesson.items.map(it => it.id), rand);
 }
+
+// Flashcard-only review of already-seen items, most overdue first.
+export function cardSession(ids, cards, max = 20, rand = Math.random) {
+  const seen = ids.filter(id => cards[id]).sort((a, b) => cards[a].due - cards[b].due).slice(0, max);
+  return shuffle(seen, rand).map(id => ({ kind: 'card', id }));
+}

@@ -1,8 +1,8 @@
 import { load, save, importState } from './store.js';
-import { newCard, review } from './srs.js';
+import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles } from './exercises.js';
-import { buildSession, lessonSession, lessonUnlocked, lessonDone } from './session.js';
+import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
 
 const UNIT_IDS = ['hangul', 'phrases', 'vocab'];
 const app = document.getElementById('app');
@@ -45,6 +45,7 @@ function route() {
   if (screen === 'unit') renderUnit(arg);
   else if (screen === 'session') session ? renderSession() : (location.hash = '#/');
   else if (screen === 'field') renderField(arg);
+  else if (screen === 'cards') renderCards(arg);
   else if (screen === 'settings') renderSettings();
   else renderHome();
   window.scrollTo(0, 0);
@@ -66,6 +67,7 @@ function renderHome() {
     ${voice ? '' : '<p class="notice">Pas de voix coréenne détectée. Android : Paramètres → Synthèse vocale → Google → Installer les données vocales → Coréen.</p>'}
     <section class="units">
       ${units.map(u => `<a class="unit" href="#/unit/${u.id}"><span class="ko">${esc(u.icon)}</span><div><b>${esc(u.title)}</b><small>${u.lessons.filter(l => lessonDone(l, state.cards)).length}/${u.lessons.length} leçons</small></div></a>`).join('')}
+      <a class="unit" href="#/cards"><span class="ko">🃏</span><div><b>Mes cartes</b><small>${Object.keys(state.cards).filter(id => byId[id]).length} mots vus · flashcards</small></div></a>
       <a class="unit" href="#/field"><span class="ko">💬</span><div><b>Sur le terrain</b><small>Phrases à montrer ou faire écouter</small></div></a>
     </section>`;
   $('#start').onclick = () => startSession(buildSession(units, state.cards, Date.now()));
@@ -94,6 +96,23 @@ function renderField(lessonId) {
   }
   app.innerHTML = header(esc(lesson.title), '#/field') + `<section class="field">${lesson.items.map(it =>
     `<button class="phrase" data-id="${it.id}"><span class="ko">${esc(it.ko)}</span><small>${esc(it.rom)}</small><span>${esc(it.fr)}</span></button>`).join('')}</section>`;
+  app.querySelectorAll('.phrase').forEach(b => { b.onclick = () => say(byId[b.dataset.id].item); });
+}
+
+function renderCards(unitId) {
+  const now = Date.now();
+  const unit = units.find(u => u.id === unitId);
+  const items = (unit ? unit.items : units.flatMap(u => u.items))
+    .filter(it => state.cards[it.id])
+    .sort((a, b) => state.cards[a.id].due - state.cards[b.id].due);
+  const when = due => (due <= now ? 'à réviser' : `dans ${Math.ceil((due - now) / DAY)} j`);
+  const chip = (id, label) => `<a class="chip${(unit?.id ?? '') === id ? ' on' : ''}" href="#/cards${id ? '/' + id : ''}">${esc(label)}</a>`;
+  app.innerHTML = header('Mes cartes', '#/') + `<nav class="chips">${chip('', 'Tout')}${units.map(u => chip(u.id, u.title)).join('')}</nav>
+    <button class="primary big" id="review" ${items.length ? '' : 'disabled'}>Réviser en flashcards (${Math.min(20, items.length)})</button>
+    ${items.length ? '' : '<p class="notice">Aucun mot vu ici pour l\'instant. Commence une leçon !</p>'}
+    <section class="field">${items.map(it =>
+      `<button class="phrase" data-id="${it.id}"><span class="ko">${esc(it.ko)}</span><small>${esc(it.rom)} · ${when(state.cards[it.id].due)}</small><span>${esc(it.fr)}</span></button>`).join('')}</section>`;
+  $('#review').onclick = () => startSession(cardSession(items.map(it => it.id), state.cards));
   app.querySelectorAll('.phrase').forEach(b => { b.onclick = () => say(byId[b.dataset.id].item); });
 }
 
@@ -140,7 +159,7 @@ function prepare() {
   const step = session.queue[session.pos];
   if (!step) { session.current = null; return; }
   const { item, unit } = byId[step.id];
-  const type = step.kind === 'intro' ? 'intro' : pickExercise(item, unit.id, Math.random, !!voice);
+  const type = step.kind === 'intro' ? 'intro' : step.kind === 'card' ? 'flashcard' : pickExercise(item, unit.id, Math.random, !!voice);
   session.current = { ...buildQuestion(type, item, unit.items), unit: unit.id };
 }
 
@@ -256,7 +275,7 @@ function grade(g) {
   } else {
     s.combo = 0;
     buzz([60, 40, 60]);
-    if (!s.retried.has(id)) { s.retried.add(id); s.queue.push({ kind: 'quiz', id }); }
+    if (!s.retried.has(id)) { s.retried.add(id); s.queue.push({ kind: s.queue[s.pos].kind === 'card' ? 'card' : 'quiz', id }); }
   }
   persist();
 }
