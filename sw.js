@@ -1,5 +1,5 @@
 // Bump on every deploy that changes any file, or phones keep the old version.
-const CACHE = 'klearn-v12';
+const CACHE = 'klearn-v13';
 // Photo reading files come from a CDN at pinned versions: kept apart so app updates don't re-download them.
 const OCR_CACHE = 'ocr-v1';
 const ASSETS = [

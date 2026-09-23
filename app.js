@@ -395,17 +395,15 @@ function renderSummary() {
 // --- games ---
 const GAMES = {
   assemble: { title: 'Assemble la syllabe', icon: '🧩', desc: 'Touche les lettres dans l\'ordre du clavier' },
-  flash: { title: 'Frappe éclair', icon: '⚡', desc: '60 s pour taper un max de mots' },
-  mix: { title: 'Lis et écris', icon: '🔀', desc: 'Lire et écrire le hangeul, mélangés · 60 s' },
+  flash: { title: 'Frappe', icon: '⚡', desc: 'Recopie 15 mots en hangeul', rounds: 15 },
+  mix: { title: 'Lis et écris', icon: '🔀', desc: 'Lire et écrire le hangeul, mélangés · 15 mots', rounds: 15 },
   dictee: { title: 'Dictée', icon: '🎧', desc: 'Écoute et écris', voice: true },
   blanks: { title: 'Phrases à trous', icon: '🧱', desc: 'Complète la phrase en tapant' },
 };
-const FLASH_SECONDS = 60;
-const TIMED = new Set(['flash', 'mix']);
 const TYPE_INPUT = '<input type="text" id="typed" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="한글로…">';
 let game = null;
 
-const stopGame = () => { clearInterval(game?.timer); game = null; };
+const stopGame = () => { game = null; };
 const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
 const syllables = ko => [...ko].filter(isSyllable).length;
 
@@ -420,30 +418,22 @@ function renderGames() {
 function renderGame(id) {
   stopGame();
   if (!GAMES[id] || (GAMES[id].voice && !voice)) return renderGames();
-  game = { id, score: 0, round: 0, rounds: 10 };
-  if (TIMED.has(id)) {
-    game.timeLeft = FLASH_SECONDS;
-    game.timer = setInterval(tick, 1000);
-  }
+  game = { id, score: 0, round: 0, rounds: GAMES[id].rounds ?? 10 };
   nextRound();
 }
 
-function tick() {
-  game.timeLeft--;
-  const bar = $('.bar div');
-  if (bar) bar.style.width = `${(game.timeLeft / FLASH_SECONDS) * 100}%`;
-  if (game.timeLeft <= 0) endGame();
-}
-
 function nextRound() {
-  if (!TIMED.has(game.id) && game.round >= game.rounds) return endGame();
+  if (game.round >= game.rounds) return endGame();
   game.round++;
+  // Frappe and Lis et écris keep one screen (and the keyboard) across words: move the bar by hand.
+  const bar = $('.bar div');
+  if (bar) bar.style.width = `${((game.round - 1) / game.rounds) * 100}%`;
   ROUNDS[game.id]();
 }
 
 function play(inner) {
   const g = game;
-  const progress = TIMED.has(g.id) ? g.timeLeft / FLASH_SECONDS : (g.round - 1) / g.rounds;
+  const progress = (g.round - 1) / g.rounds;
   app.innerHTML = `<header class="top"><a href="#/games" class="icon-btn" aria-label="Quitter">✕</a>
       <div class="bar"><div style="width:${progress * 100}%"></div></div><span class="combo" id="score">${g.score} pts</span></header>
     <main class="card-area">${inner}</main><footer id="feedback"></footer>`;
