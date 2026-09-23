@@ -1,5 +1,5 @@
 // Bump on every deploy that changes any file, or phones keep the old version.
-const CACHE = 'klearn-v4';
+const CACHE = 'klearn-v5';
 const ASSETS = [
   './', 'index.html', 'style.css', 'app.js', 'srs.js', 'game.js', 'exercises.js', 'session.js', 'store.js', 'games.js',
   'manifest.webmanifest', 'content/hangul.json', 'content/phrases.json', 'content/vocab.json', 'content/patterns.json',

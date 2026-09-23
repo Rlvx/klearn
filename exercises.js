@@ -33,6 +33,32 @@ export function buildQuestion(type, item, pool, rand = Math.random) {
   return q;
 }
 
-export const normalize = s => s.normalize('NFC').replace(/[\s.,!?~'"…]/g, '');
+// Jamo comparés à plat : un clavier coréen ne fusionne ㅗ + ㅏ en ㅘ que dans une
+// syllabe, donc on décompose tout avant de comparer (ㅘ === ㅗㅏ, 와 === ㅇㅗㅏ).
+const LEAD = [...'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'];
+const VOWEL = [...'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'];
+const TAIL = ['', ...'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'];
+
+const CLUSTERS = {
+  'ㅘ': 'ㅗㅏ', 'ㅙ': 'ㅗㅐ', 'ㅚ': 'ㅗㅣ', 'ㅝ': 'ㅜㅓ', 'ㅞ': 'ㅜㅔ', 'ㅟ': 'ㅜㅣ', 'ㅢ': 'ㅡㅣ',
+  'ㄳ': 'ㄱㅅ', 'ㄵ': 'ㄴㅈ', 'ㄶ': 'ㄴㅎ', 'ㄺ': 'ㄹㄱ', 'ㄻ': 'ㄹㅁ', 'ㄼ': 'ㄹㅂ',
+  'ㄽ': 'ㄹㅅ', 'ㄾ': 'ㄹㅌ', 'ㄿ': 'ㄹㅍ', 'ㅀ': 'ㄹㅎ', 'ㅄ': 'ㅂㅅ'
+};
+const CLUSTER_RE = new RegExp(`[${Object.keys(CLUSTERS).join('')}]`, 'g');
+
+const toJamo = ch => {
+  const c = ch.codePointAt(0);
+  if (c >= 0xac00 && c <= 0xd7a3) {
+    const i = c - 0xac00;
+    return LEAD[Math.floor(i / 588)] + VOWEL[Math.floor((i % 588) / 28)] + TAIL[i % 28];
+  }
+  if (c >= 0x1100 && c <= 0x1112) return LEAD[c - 0x1100];
+  if (c >= 0x1161 && c <= 0x1175) return VOWEL[c - 0x1161];
+  if (c >= 0x11a8 && c <= 0x11c2) return TAIL[c - 0x11a7];
+  return ch;
+};
+
+export const normalize = s => [...s.normalize('NFC').replace(/[\s.,!?~'"…]/g, '')]
+  .map(toJamo).join('').replace(CLUSTER_RE, m => CLUSTERS[m]);
 export const checkTyped = (input, item) => normalize(input) === normalize(item.ko);
 export const checkTiles = (order, item) => order.join(' ') === item.tiles.join(' ');

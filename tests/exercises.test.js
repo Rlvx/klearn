@@ -33,6 +33,18 @@ test('typed answers accept decomposed Hangul', () => {
   assert.ok(checkTyped('가'.normalize('NFD'), { ko: '가' }));
 });
 
+test('typed answers accept compound jamo typed as separate keys', () => {
+  // Un clavier coréen ne fusionne pas les voyelles hors syllabe : ㅗ + ㅏ reste ㅗㅏ.
+  assert.ok(checkTyped('ㅗㅏ', { ko: 'ㅘ' }));
+  assert.ok(checkTyped('ㅜㅓ', { ko: 'ㅝ' }));
+  assert.ok(checkTyped('ㅡㅣ', { ko: 'ㅢ' }));
+  assert.ok(checkTyped('ㅇㅗㅏ', { ko: '와' }));
+  assert.ok(checkTyped('ㅂㅅ', { ko: 'ㅄ' }));
+  assert.ok(!checkTyped('ㅗㅐ', { ko: 'ㅘ' }));
+  assert.ok(!checkTyped('ㅗ', { ko: 'ㅘ' }));
+  assert.ok(!checkTyped('ㅏㅗ', { ko: 'ㅘ' }));
+});
+
 test('listen distractors never sound identical to the item', () => {
   const item = { id: 'g', ko: 'ㄱ', say: '가', fr: 'g' };
   const listenPool = [
