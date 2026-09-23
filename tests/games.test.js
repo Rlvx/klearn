@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { keystrokes, romanize, syllablePool, assembleRound, typingPool, blankRound } from '../games.js';
+import { keystrokes, romanize, syllablePool, assembleRound, typingPool, blankRound, transliterate, romMatches, readingPool, pickByLength } from '../games.js';
 
 test('keystrokes follow the 2-beolsik keyboard', () => {
   assert.deepEqual(keystrokes('가'), ['ㄱ', 'ㅏ']);
@@ -53,4 +53,32 @@ test('blank round builds prompt, French and full sentence', () => {
   assert.equal(r.fr, 'Je voudrais… eau');
   assert.equal(r.full, '물 주세요');
   assert.equal(r.noun.id, 'vo-mul');
+});
+
+test('letter-by-letter spelling is unique for every Hangul syllable', () => {
+  const seen = new Set();
+  for (let c = 0xac00; c <= 0xd7a3; c++) seen.add(transliterate(String.fromCharCode(c)));
+  assert.equal(seen.size, 11172);
+  assert.equal(transliterate('감사합니다'), 'gam·sa·hab·ni·da');
+  assert.equal(transliterate('이거 얼마예요?'), 'i·geo eol·ma·ye·yo');
+  assert.equal(transliterate('닭'), 'dalg');
+});
+
+test('romanization answers: as said, letter by letter, with or without separators', () => {
+  const it = { ko: '감사합니다', rom: 'gamsahamnida' };
+  for (const ok of ['gamsahamnida', 'Gam-sa-ham-ni-da', 'gam sa hab ni da', 'gamsahabnida', 'gamsahapnida']) assert.ok(romMatches(ok, it), ok);
+  for (const ko of ['', 'gamsahamnda', '감사합니다']) assert.ok(!romMatches(ko, it), ko);
+  assert.ok(romMatches('masisseoyo', { ko: '맛있어요' }, ['masisseoyo']));
+});
+
+test('reading pool: Hangul words of 1 to 6 syllables, each spelling once; length follows the level', () => {
+  const pool = readingPool([
+    { ko: '가' }, { ko: '커피' }, { ko: '커피' }, { ko: 'ㄱ' }, { ko: '3시' }, { ko: '이거 얼마예요?' }, { ko: '아이스 아메리카노 한 잔 주세요' },
+  ]);
+  assert.deepEqual(pool.map(it => it.ko), ['가', '커피', '이거 얼마예요?']);
+  for (let i = 0; i < 50; i++) {
+    assert.equal(pickByLength(pool, 1).ko, '가');
+    assert.equal(pickByLength(pool, 2, Math.random, pool[1]).ko, '가');
+  }
+  assert.equal(pickByLength(pool, 6).ko, '이거 얼마예요?');
 });

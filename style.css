@@ -154,3 +154,4 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .choices.wide .choice { font-size: 17px; padding: 14px; }
 .locked-text { gap: 6px; opacity: .85; }
 .locked-text small { color: var(--muted); }
+.latin { font-weight: 800; letter-spacing: .02em; word-break: break-word; }

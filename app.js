@@ -3,7 +3,7 @@ import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles, canRead } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
-import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
+import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize, transliterate, romMatches, readingPool, pickByLength } from './games.js';
 import * as T from './tutor.js';
 import * as M from './mine.js';
 import * as R from './reading.js';
@@ -396,10 +396,14 @@ function renderSummary() {
 const GAMES = {
   assemble: { title: 'Assemble la syllabe', icon: '🧩', desc: 'Touche les lettres dans l\'ordre du clavier' },
   flash: { title: 'Frappe éclair', icon: '⚡', desc: '60 s pour taper un max de mots' },
+  romko: { title: 'Écris en hangeul', icon: '✍️', desc: 'Romanisation → hangeul, 60 s' },
+  koro: { title: 'Lis en latin', icon: '👀', desc: 'Hangeul → romanisation, 60 s' },
   dictee: { title: 'Dictée', icon: '🎧', desc: 'Écoute et écris', voice: true },
   blanks: { title: 'Phrases à trous', icon: '🧱', desc: 'Complète la phrase en tapant' },
 };
 const FLASH_SECONDS = 60;
+const TIMED = new Set(['flash', 'romko', 'koro']);
+const ROM_INPUT_GAME = '<input type="text" id="typed" lang="fr" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="en lettres latines…">';
 const TYPE_INPUT = '<input type="text" id="typed" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="한글로…">';
 let game = null;
 
@@ -419,7 +423,7 @@ function renderGame(id) {
   stopGame();
   if (!GAMES[id] || (GAMES[id].voice && !voice)) return renderGames();
   game = { id, score: 0, round: 0, rounds: 10 };
-  if (id === 'flash') {
+  if (TIMED.has(id)) {
     game.timeLeft = FLASH_SECONDS;
     game.timer = setInterval(tick, 1000);
   }
@@ -434,14 +438,14 @@ function tick() {
 }
 
 function nextRound() {
-  if (game.id !== 'flash' && game.round >= game.rounds) return endGame();
+  if (!TIMED.has(game.id) && game.round >= game.rounds) return endGame();
   game.round++;
   ROUNDS[game.id]();
 }
 
 function play(inner) {
   const g = game;
-  const progress = g.id === 'flash' ? g.timeLeft / FLASH_SECONDS : (g.round - 1) / g.rounds;
+  const progress = TIMED.has(g.id) ? g.timeLeft / FLASH_SECONDS : (g.round - 1) / g.rounds;
   app.innerHTML = `<header class="top"><a href="#/games" class="icon-btn" aria-label="Quitter">✕</a>
       <div class="bar"><div style="width:${progress * 100}%"></div></div><span class="combo" id="score">${g.score} pts</span></header>
     <main class="card-area">${inner}</main><footer id="feedback"></footer>`;
@@ -539,6 +543,9 @@ const ROUNDS = {
     };
   },
 
+  romko() { speedRound('ko'); },
+  koro() { speedRound('rom'); },
+
   dictee() {
     const it = pickOne(game.pool ??= typingPool(units.flatMap(u => u.items), state.cards));
     play(`<p class="label">Écoute et écris</p><button class="play" id="snd" aria-label="Réécouter">🔊</button>${typingControls}`);
@@ -553,6 +560,56 @@ const ROUNDS = {
     bindTyping(r.noun.ko, v => checkTyped(v, r.noun) || checkTyped(v, { ko: r.full }), `<p class="ko">${esc(r.full)}</p><p>${esc(r.fr)}</p>`, r.full);
   },
 };
+
+const latinOnly = s => s.toLowerCase().replace(/[^a-z]/g, '');
+const spellHint = ko => [...ko].filter(isSyllable).map(s => T.spell(s).map(p => `${p.jamo} ${p.rom}`).join(' ')).join(' · ');
+
+// Read or write words for their letters, not their meaning. One persistent input keeps the keyboard open.
+function speedRound(target) {
+  const g = game;
+  g.pool ??= readingPool([...contentItems(), ...state.custom]);
+  g.len ??= 1;
+  g.streak ??= 0;
+  const it = pickByLength(g.pool, g.len, Math.random, g.last);
+  g.last = it;
+  let hinted = false;
+  if (g.round === 1) {
+    play(`<p class="label">${target === 'ko' ? 'Écris en hangeul' : 'Écris en lettres latines'}</p><div class="flash" id="word"></div>
+      ${target === 'ko' ? TYPE_INPUT : ROM_INPUT_GAME}
+      <div class="row2"><button class="secondary" id="hint">💡 ${target === 'ko' ? 'Touches' : 'Lettres'}</button><button class="secondary" id="skip">⏭ Passer</button></div>
+      <p class="note ko" id="keys"></p><p class="note" id="last"></p>`);
+  }
+  const letters = transliterate(it.ko);
+  const said = it.rom && latinOnly(it.rom) !== latinOnly(letters) ? it.rom : '';
+  $('#word').innerHTML = target === 'ko'
+    ? `<p class="latin ${letters.length > 14 ? 'lg' : 'xl'}">${esc(letters)}</p>${said ? `<p class="note">se dit : ${esc(said)}</p>` : ''}`
+    : `<p class="ko ${size(it.ko)}">${esc(it.ko)}</p>`;
+  $('#word').classList.remove('pop');
+  void $('#word').offsetWidth;
+  $('#word').classList.add('pop');
+  $('#keys').textContent = '';
+  const input = $('#typed');
+  input.value = '';
+  input.focus();
+  $('#hint').onclick = () => { hinted = true; $('#keys').textContent = target === 'ko' ? keystrokes(it.ko).join(' ') : spellHint(it.ko); input.focus(); };
+  $('#skip').onclick = () => {
+    $('#last').innerHTML = `⏭ <span class="ko">${esc(it.ko)}</span> = ${esc(letters)}`;
+    g.len = Math.max(1, g.len - 1);
+    g.streak = 0;
+    buzz([60, 40, 60]);
+    nextRound();
+  };
+  input.oninput = () => {
+    const ok = target === 'ko' ? checkTyped(input.value, it) : romMatches(input.value, it, [M.autoRom(it.ko)]);
+    if (!ok) return;
+    buzz(30);
+    const n = syllables(it.ko);
+    addPoints(hinted ? Math.ceil(n / 2) : n);
+    if (++g.streak % 3 === 0) g.len = Math.min(6, g.len + 1);
+    $('#last').innerHTML = `✓ <span class="ko">${esc(it.ko)}</span> · ${esc(it.rom || letters)}${it.fr ? ` · ${esc(it.fr)}` : ''}`;
+    nextRound();
+  };
+}
 
 function endGame() {
   if (!game) return;

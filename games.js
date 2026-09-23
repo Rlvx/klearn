@@ -62,3 +62,41 @@ export function blankRound(patterns, byId, rand = Math.random) {
   const noun = byId[pick(p.nouns, rand)];
   return { noun, prompt: p.ko.replace('{}', '___'), fr: p.fr.replace('{}', noun.fr), full: p.ko.replace('{}', noun.ko) };
 }
+
+// Letter-by-letter spelling, one Latin form per Hangul spelling: 감사합니다 → gam·sa·hab·ni·da.
+// (The usual romanization follows pronunciation, so « gamsahamnida » could be spelled several ways.)
+const L_FINAL = ['', 'g', 'kk', 'gs', 'n', 'nj', 'nh', 'd', 'l', 'lg', 'lm', 'lb', 'ls', 'lt', 'lp', 'lh', 'm', 'b', 'bs', 's', 'ss', 'ng', 'j', 'ch', 'k', 't', 'p', 'h'];
+export function transliterate(text) {
+  return text.normalize('NFC').split(/\s+/)
+    .map(w => [...w].filter(isSyllable).map(ch => { const [i, v, f] = parts(ch); return R_INITIAL[i] + R_VOWEL[v] + L_FINAL[f]; }).join('·'))
+    .filter(Boolean).join(' ');
+}
+
+const latin = s => s.normalize('NFC').toLowerCase().replace(/[^a-z]/g, '');
+// Accepts how it's said (item.rom and any extra form) as well as letter by letter, with or without separators.
+export function romMatches(input, item, extra = []) {
+  const got = latin(input);
+  if (!got) return false;
+  const bySyllable = [...item.ko.normalize('NFC')].filter(isSyllable).map(romanize).join('');
+  return [item.rom ?? '', transliterate(item.ko), bySyllable, ...extra].some(r => latin(r) === got);
+}
+
+// Words to read or write, whatever their meaning: Hangul only, 1 to 6 syllables, each spelling once.
+const syllableCount = it => [...it.ko].filter(isSyllable).length;
+export function readingPool(items) {
+  const seen = new Set();
+  return items.filter(it => {
+    const n = syllableCount(it);
+    const key = it.ko.replace(/[\s?!.,~]/g, '');
+    if (!n || n > 6 || !/^[가-힣\s?!.,~]+$/.test(it.ko) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Words get longer as the player chains right answers: len and len - 1 syllables.
+export function pickByLength(pool, len, rand = Math.random, avoid = null) {
+  const others = pool.filter(it => it !== avoid);
+  const fit = others.filter(it => syllableCount(it) <= len && syllableCount(it) >= Math.max(1, len - 1));
+  return pick(fit.length ? fit : others, rand);
+}
