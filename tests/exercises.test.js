@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { shuffle, pickExercise, buildQuestion, checkTyped, checkTiles, lettersOf, canRead } from '../exercises.js';
+import { shuffle, pickExercise, buildQuestion, checkTyped, checkTiles, lettersOf, canRead, expectedParticle, particleWhy } from '../exercises.js';
 
 const pool = [
   { id: 'a', ko: '가', fr: 'ga' }, { id: 'b', ko: '나', fr: 'na' }, { id: 'c', ko: '다', fr: 'da' },
@@ -92,4 +92,27 @@ test('words that cannot be read yet only get button exercises', () => {
   const seen = new Set();
   for (let i = 0; i < 500; i++) seen.add(pickExercise({ tiles: ['x'] }, 'phrases', Math.random, true, true));
   assert.ok(seen.has('type') && seen.has('flashcard') && seen.has('build'));
+});
+
+test('particles follow the last letter of the word', () => {
+  assert.equal(expectedParticle('커피', ['를', '을']), '를');
+  assert.equal(expectedParticle('물', ['를', '을']), '을');
+  assert.equal(expectedParticle('저', ['은', '는']), '는');
+  assert.equal(expectedParticle('명동', ['예요', '이에요']), '이에요');
+  assert.equal(expectedParticle('서울', ['로', '으로']), '로');
+  assert.equal(expectedParticle('명동', ['에', '를']), null);
+  assert.match(particleWhy('커피', '를'), /voyelle/);
+  assert.match(particleWhy('물', '을'), /consonne.*ㄹ/);
+});
+
+test('gap question hides the particle and explains it', () => {
+  const item = { ko: '이거 물이에요', gap: { before: '물', answer: '이에요', options: ['예요', '이에요'] } };
+  const q = buildQuestion('gap', item, [item]);
+  assert.equal(q.prompt, '이거 물 ___');
+  assert.deepEqual([...q.options].sort(), ['예요', '이에요']);
+  assert.match(q.why, /consonne/);
+  const kinds = new Set();
+  for (let i = 0; i < 300; i++) kinds.add(pickExercise(item, 'grammar', Math.random, false, true));
+  assert.ok(kinds.has('gap'));
+  for (let i = 0; i < 300; i++) assert.notEqual(pickExercise(item, 'grammar', Math.random, false, false), 'gap');
 });

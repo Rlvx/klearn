@@ -6,9 +6,10 @@ import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } 
 import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
 import * as T from './tutor.js';
 
-const UNIT_IDS = ['hangul', 'phrases', 'vocab'];
+const UNIT_IDS = ['hangul', 'phrases', 'vocab', 'grammar'];
 const app = document.getElementById('app');
 const byId = {};
+const lessonById = {};
 let units = [];
 let patterns = [];
 let state = load();
@@ -169,6 +170,7 @@ function startSession(queue) {
 function prepare() {
   const step = session.queue[session.pos];
   if (!step) { session.current = null; return; }
+  if (step.kind === 'rule') { session.current = { type: 'rule', lesson: lessonById[step.lesson] }; return; }
   const { item, unit } = byId[step.id];
   const readable = canRead(item.ko, knownLetters());
   const type = step.kind === 'intro' ? 'intro'
@@ -197,7 +199,14 @@ const full = q => `<p class="ko ${size(q.item.ko)}">${esc(q.item.ko)}</p>${rom(q
 const choices = (q, key) => `<div class="choices">${q.choices.map((c, i) =>
   `<button class="choice${key === 'ko' ? ' ko' : ''}" data-i="${i}">${esc(c[key])}${key === 'ko' && state.showRom && !q.readable ? `<small class="rom">${esc(c.rom)}</small>` : ''}</button>`).join('')}</div>`;
 
+const ruleCard = lesson => `<div class="flash rule"><h2>${esc(lesson.title)}</h2>${lesson.rule.text.map(t => `<p>${esc(t)}</p>`).join('')}
+  ${lesson.rule.forms ? `<table class="forms">${lesson.rule.forms.map(([form, when, ex]) =>
+    `<tr><td class="ko">${esc(form)}</td><td>${esc(when)}</td><td class="ko">${esc(ex)}</td></tr>`).join('')}</table>` : ''}</div>`;
+
 const VIEWS = {
+  rule: q => `<p class="label">📖 Règle</p>${ruleCard(q.lesson)}<button class="primary" id="next">Compris, on pratique</button>`,
+  gap: q => `<p class="label">Complète</p><div class="flash"><p class="ko lg">${esc(q.prompt)}</p><p class="fr">${esc(q.item.fr)}</p></div>
+    <div class="choices">${q.options.map((o, i) => `<button class="choice ko" data-i="${i}">${esc(o)}</button>`).join('')}</div>`,
   intro: q => `<p class="label">Nouveau</p><div class="flash">${full(q)}</div>${audioBtn()}<button class="primary" id="next">Compris</button>`,
   recognize: q => `<p class="label">Que veut dire…</p><div class="flash"><p class="ko ${size(q.item.ko)}">${esc(q.item.ko)}</p>${rom(q)}</div>${q.unit === 'hangul' ? '' : audioBtn()}${choices(q, 'fr')}`,
   reverse: q => `<p class="label">Comment dit-on…</p><div class="flash"><p class="fr">${esc(q.item.fr)}</p></div>${choices(q, 'ko')}`,
@@ -228,6 +237,18 @@ function bindChoices(q) {
 }
 
 const BIND = {
+  rule: () => { $('#next').onclick = advance; },
+  gap: q => {
+    const buttons = app.querySelectorAll('.choice');
+    buttons.forEach(b => {
+      b.onclick = () => {
+        const ok = q.options[+b.dataset.i] === q.item.gap.answer;
+        buttons.forEach((c, i) => { c.disabled = true; if (q.options[i] === q.item.gap.answer) c.classList.add('right'); });
+        if (!ok) b.classList.add('wrong');
+        answer(ok);
+      };
+    });
+  },
   intro: q => {
     $('#next').onclick = () => { state.cards[q.item.id] ??= newCard(Date.now()); persist(); advance(); };
   },
@@ -327,7 +348,8 @@ function answer(ok) {
   const fb = $('#feedback');
   fb.className = ok ? 'good' : 'bad';
   fb.innerHTML = `<b>${ok ? (session.combo >= 5 ? `🔥 Combo ×${session.combo} ! +20 XP` : 'Bien joué ! +10 XP') : 'Pas tout à fait…'}</b>
-    ${ok ? '' : `<p class="ko">${esc(q.item.ko)}</p>${rom(q, true)}<p>${esc(q.item.fr)}</p>`}
+    ${ok && !q.why ? '' : `<p class="ko">${esc(q.item.ko)}</p>${rom(q, true)}<p>${esc(q.item.fr)}</p>`}
+    ${q.why ? `<p class="tip">💡 ${esc(q.why)}</p>` : ''}
     <button class="primary" id="next">Continuer</button>`;
   $('#next').onclick = advance;
   fb.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -790,6 +812,7 @@ async function boot() {
     const data = await Promise.all(UNIT_IDS.map(id => fetch(`content/${id}.json`).then(r => r.json())));
     units = data.map(u => ({ ...u, items: u.lessons.flatMap(l => l.items) }));
     for (const unit of units) for (const item of unit.items) byId[item.id] = { item, unit };
+    for (const unit of units) for (const lesson of unit.lessons) lessonById[lesson.id] = lesson;
     ({ patterns } = await fetch('content/patterns.json').then(r => r.json()));
     initVoice();
     window.addEventListener('hashchange', route);

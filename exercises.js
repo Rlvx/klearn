@@ -13,7 +13,8 @@ export function pickExercise(item, unitId, rand = Math.random, hasVoice = true, 
   if (unitId !== 'hangul') types.push('reverse');
   if (hasVoice) types.push('listen');
   if (item.tiles && readable) types.push('build');
-  if (unitId === 'phrases' && hasVoice) types.push('shadow');
+  if (item.gap && readable) types.push('gap', 'gap');
+  if ((unitId === 'phrases' || unitId === 'grammar') && hasVoice) types.push('shadow');
   return types[Math.floor(rand() * types.length)];
 }
 
@@ -31,6 +32,12 @@ export function buildQuestion(type, item, pool, rand = Math.random) {
     q.choices = shuffle([item, ...picked], rand);
   }
   if (type === 'build') q.tiles = shuffle(item.tiles, rand);
+  if (type === 'gap') {
+    const { before, answer } = item.gap;
+    q.prompt = item.ko.replace(before + answer, `${before} ___`);
+    q.options = shuffle(item.gap.options, rand);
+    q.why = particleWhy(before, answer);
+  }
   return q;
 }
 
@@ -79,3 +86,30 @@ export function lettersOf(ko) {
   return [...out];
 }
 export const canRead = (ko, known) => lettersOf(ko).every(j => known.has(j));
+
+// Particles that change with the last letter of the word: [after a vowel, after a consonant].
+const PARTICLES = [['예요', '이에요'], ['는', '은'], ['를', '을'], ['가', '이'], ['와', '과'], ['로', '으로']];
+
+const lastFinal = word => {
+  const c = word.normalize('NFC').codePointAt(word.length - 1);
+  return c >= 0xac00 && c <= 0xd7a3 ? TAIL[(c - 0xac00) % 28] : null;
+};
+
+// The form the rule asks for, or null when the particle doesn't alternate.
+export function expectedParticle(before, options) {
+  const pair = PARTICLES.find(p => options.includes(p[0]) && options.includes(p[1]));
+  const t = lastFinal(before);
+  if (!pair || t === null) return null;
+  if (pair[0] === '로' && t === 'ㄹ') return '로'; // 로 after ㄹ too
+  return t ? pair[1] : pair[0];
+}
+
+export function particleWhy(before, answer) {
+  const t = lastFinal(before);
+  if (t === null || !PARTICLES.some(p => p.includes(answer))) return '';
+  const last = [...before].pop();
+  if (answer === '로' && t === 'ㄹ') return `${before} finit par ㄹ : exception, on met 로.`;
+  return t
+    ? `${before} finit par une consonne (${last} → ${t} en bas) : on met ${answer}.`
+    : `${before} finit par une voyelle (${last}) : on met ${answer}.`;
+}

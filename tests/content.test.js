@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { expectedParticle } from '../exercises.js';
 
-const units = ['hangul', 'phrases', 'vocab'].map(u =>
+const units = ['hangul', 'phrases', 'vocab', 'grammar'].map(u =>
   JSON.parse(readFileSync(new URL(`../content/${u}.json`, import.meta.url), 'utf8')));
 
 test('content is well-formed', () => {
@@ -27,4 +28,24 @@ test('pattern nouns exist in content', () => {
     assert.ok(p.ko.includes('{}') && p.fr.includes('{}'), p.id);
     for (const id of p.nouns) assert.ok(ids.has(id), `${p.id}: unknown noun ${id}`);
   }
+});
+
+test('grammar lessons have a rule, and every gap follows it', () => {
+  const grammar = units.find(u => u.id === 'grammar');
+  for (const l of grammar.lessons) {
+    assert.ok(l.rule?.text?.length, `${l.id}: rule`);
+    for (const f of l.rule.forms ?? []) assert.equal(f.length, 3, l.id);
+    for (const it of l.items) {
+      if (!it.gap) continue;
+      const { before, answer, options } = it.gap;
+      assert.ok(it.ko.includes(before + answer), `${it.id}: ${before}${answer} not in ${it.ko}`);
+      assert.ok(options.includes(answer), it.id);
+      assert.equal(expectedParticle(before, options), answer, `${it.id}: ${before} + ${answer}`);
+    }
+  }
+});
+
+test('every file the app loads is cached for offline use', () => {
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  for (const u of units) assert.ok(sw.includes(`content/${u.id}.json`), u.id);
 });

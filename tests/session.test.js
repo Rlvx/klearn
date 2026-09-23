@@ -44,3 +44,12 @@ test('card session: seen cards only, most overdue first, capped', () => {
   const q = cardSession(['a', 'b', 'c', 'unseen'], cards, 2);
   assert.deepEqual(q.map(s => s.kind + ':' + s.id).sort(), ['card:b', 'card:c']);
 });
+
+test('a lesson with a rule shows it first, and the daily session shows it once', () => {
+  const lesson = { id: 'g1', rule: { text: ['r'] }, items: [{ id: 'a' }, { id: 'b' }] };
+  const unit = { id: 'grammar', lessons: [lesson] };
+  assert.deepEqual(lessonSession(lesson, {}).map(s => s.kind), ['rule', 'intro', 'intro', 'quiz', 'quiz']);
+  assert.equal(lessonSession(lesson, { a: {}, b: {} })[0].kind, 'rule');
+  assert.equal(buildSession([unit], {}, 0)[0].kind, 'rule');
+  assert.ok(!buildSession([unit], { a: { due: 1e15 } }, 0).some(s => s.kind === 'rule'));
+});

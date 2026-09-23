@@ -1,0 +1,158 @@
+{
+  "id": "grammar",
+  "title": "Grammaire",
+  "icon": "문",
+  "lessons": [
+    {
+      "id": "gr-l1",
+      "title": "Demander : … 주세요",
+      "rule": {
+        "text": [
+          "주세요 veut dire « donnez-moi, s'il vous plaît ». On met ce qu'on veut devant : [chose] 주세요.",
+          "En coréen, le verbe va toujours à la fin de la phrase.",
+          "Pour une quantité : chose + nombre + compteur + 주세요. Par exemple 커피 두 잔 주세요, deux cafés."
+        ]
+      },
+      "items": [
+        { "id": "gr-jus-maekju", "ko": "맥주 두 병 주세요", "rom": "maekju du byeong juseyo", "fr": "Deux bouteilles de bière, s'il vous plaît", "note": "맥주 (bière) + 두 (deux) + 병 (bouteille) + 주세요", "tiles": ["맥주", "두", "병", "주세요"] },
+        { "id": "gr-jus-gimbap", "ko": "김밥 하나 주세요", "rom": "gimbap hana juseyo", "fr": "Un gimbap, s'il vous plaît", "note": "Sans compteur, on met juste le nombre natif : 하나 = un", "tiles": ["김밥", "하나", "주세요"] },
+        { "id": "gr-jus-coffee", "ko": "커피 두 잔 주세요", "rom": "keopi du jan juseyo", "fr": "Deux cafés, s'il vous plaît", "note": "잔 = tasse / verre. 둘 (deux) devient 두 devant un compteur", "tiles": ["커피", "두", "잔", "주세요"] },
+        { "id": "gr-jus-receipt", "ko": "영수증 주세요", "rom": "yeongsujeung juseyo", "fr": "Le reçu, s'il vous plaît", "note": "영수증 = reçu, ticket de caisse", "tiles": ["영수증", "주세요"] },
+        { "id": "gr-jus-this", "ko": "이거 하나 주세요", "rom": "igeo hana juseyo", "fr": "J'en voudrais un de ça", "note": "이거 = ça (en montrant du doigt)", "tiles": ["이거", "하나", "주세요"] },
+        { "id": "gr-jus-bag", "ko": "봉투 주세요", "rom": "bongtu juseyo", "fr": "Un sac, s'il vous plaît", "note": "봉투 = sac (à la caisse)", "tiles": ["봉투", "주세요"] }
+      ]
+    },
+    {
+      "id": "gr-l2",
+      "title": "Il y a / je n'ai pas : 있어요 · 없어요",
+      "rule": {
+        "text": [
+          "있어요 veut dire « il y a », « j'ai » ou « vous avez ». 없어요 est son contraire : « il n'y a pas », « je n'ai pas ».",
+          "Pour poser la question, on garde la même phrase et on fait monter la voix à la fin : 물 있어요? = vous avez de l'eau ?",
+          "À l'oral, on laisse souvent tomber les petites particules : on dit simplement [chose] 있어요."
+        ]
+      },
+      "items": [
+        { "id": "gr-iss-water", "ko": "물 있어요?", "rom": "mul isseoyo?", "fr": "Vous avez de l'eau ?", "note": "La question, c'est juste l'intonation qui monte", "tiles": ["물", "있어요?"] },
+        { "id": "gr-iss-seat", "ko": "자리 있어요?", "rom": "jari isseoyo?", "fr": "Il y a de la place ?", "note": "자리 = place, siège (au restaurant, dans le train)", "tiles": ["자리", "있어요?"] },
+        { "id": "gr-iss-wifi", "ko": "와이파이 있어요?", "rom": "waipai isseoyo?", "fr": "Il y a le wifi ?", "tiles": ["와이파이", "있어요?"] },
+        { "id": "gr-eop-time", "ko": "시간 없어요", "rom": "sigan eopseoyo", "fr": "Je n'ai pas le temps", "note": "시간 = temps. 없어요 = le contraire de 있어요", "tiles": ["시간", "없어요"] },
+        { "id": "gr-eop-cash", "ko": "현금 없어요", "rom": "hyeongeum eopseoyo", "fr": "Je n'ai pas d'espèces", "note": "현금 = espèces, liquide", "tiles": ["현금", "없어요"] }
+      ]
+    },
+    {
+      "id": "gr-l3",
+      "title": "C'est… : 예요 / 이에요",
+      "rule": {
+        "text": [
+          "Pour dire « c'est [quelque chose] », on colle 예요 ou 이에요 juste après le nom.",
+          "Le choix dépend de la dernière lettre du nom : voyelle ou consonne.",
+          "Même forme pour la question, avec la voix qui monte : 이거 뭐예요? = c'est quoi, ça ?"
+        ],
+        "forms": [["예요", "après une voyelle", "커피예요"], ["이에요", "après une consonne", "물이에요"]]
+      },
+      "items": [
+        { "id": "gr-ye-coffee", "ko": "이거 커피예요", "rom": "igeo keopiyeyo", "fr": "Ça, c'est du café", "tiles": ["이거", "커피예요"], "gap": { "before": "커피", "answer": "예요", "options": ["예요", "이에요"] } },
+        { "id": "gr-ye-water", "ko": "이거 물이에요", "rom": "igeo murieyo", "fr": "Ça, c'est de l'eau", "note": "À l'oral, le ㄹ glisse sur la syllabe suivante : « mu-ri-e-yo »", "tiles": ["이거", "물이에요"], "gap": { "before": "물", "answer": "이에요", "options": ["예요", "이에요"] } },
+        { "id": "gr-ye-friend", "ko": "제 친구예요", "rom": "je chinguyeyo", "fr": "C'est mon ami(e)", "note": "제 = mon, ma (poli)", "tiles": ["제", "친구예요"], "gap": { "before": "친구", "answer": "예요", "options": ["예요", "이에요"] } },
+        { "id": "gr-ye-myeongdong", "ko": "여기 명동이에요?", "rom": "yeogi myeongdongieyo?", "fr": "Ici, c'est Myeongdong ?", "tiles": ["여기", "명동이에요?"], "gap": { "before": "명동", "answer": "이에요", "options": ["예요", "이에요"] } },
+        { "id": "gr-ye-what", "ko": "이거 뭐예요?", "rom": "igeo mwoyeyo?", "fr": "C'est quoi, ça ?", "note": "뭐 = quoi", "tiles": ["이거", "뭐예요?"], "gap": { "before": "뭐", "answer": "예요", "options": ["예요", "이에요"] } }
+      ]
+    },
+    {
+      "id": "gr-l4",
+      "title": "Le thème : 는 / 은",
+      "rule": {
+        "text": [
+          "는 / 은 se colle après un mot pour en faire le thème de la phrase, un peu comme « quant à… » ou « moi, je… ».",
+          "On s'en sert beaucoup pour se présenter, ou pour mettre une chose en avant par rapport à une autre.",
+          "Le choix dépend de la dernière lettre du mot : voyelle ou consonne."
+        ],
+        "forms": [["는", "après une voyelle", "저는"], ["은", "après une consonne", "이름은"]]
+      },
+      "items": [
+        { "id": "gr-neun-france", "ko": "저는 프랑스에서 왔어요", "rom": "jeoneun peurangseueseo wasseoyo", "fr": "Je viens de France", "note": "저 = moi (poli). 에서 = de (provenance)", "tiles": ["저는", "프랑스에서", "왔어요"], "gap": { "before": "저", "answer": "는", "options": ["는", "은"] } },
+        { "id": "gr-eun-name", "ko": "제 이름은 마리예요", "rom": "je ireumeun mariyeyo", "fr": "Je m'appelle Marie", "note": "Mot à mot : « mon nom, c'est Marie ». Remplace 마리 par ton prénom", "tiles": ["제", "이름은", "마리예요"], "gap": { "before": "이름", "answer": "은", "options": ["는", "은"] } },
+        { "id": "gr-eun-today", "ko": "오늘은 쉬어요", "rom": "oneureun swieoyo", "fr": "Aujourd'hui, je me repose", "note": "쉬어요 = se reposer", "tiles": ["오늘은", "쉬어요"], "gap": { "before": "오늘", "answer": "은", "options": ["는", "은"] } },
+        { "id": "gr-neun-coffee", "ko": "커피는 좋아해요", "rom": "keopineun joahaeyo", "fr": "Le café, j'aime bien", "tiles": ["커피는", "좋아해요"], "gap": { "before": "커피", "answer": "는", "options": ["는", "은"] } },
+        { "id": "gr-neun-korean", "ko": "한국어는 어려워요", "rom": "hangugeoneun eoryeowoyo", "fr": "Le coréen, c'est difficile", "note": "어려워요 = c'est difficile", "tiles": ["한국어는", "어려워요"], "gap": { "before": "한국어", "answer": "는", "options": ["는", "은"] } }
+      ]
+    },
+    {
+      "id": "gr-l5",
+      "title": "Ce qu'on mange, boit, achète : 를 / 을",
+      "rule": {
+        "text": [
+          "를 / 을 se colle après la chose qu'on mange, boit, achète… (le complément du verbe).",
+          "L'ordre de la phrase : [chose]를 [verbe]. Le verbe reste à la fin.",
+          "À l'oral, on l'enlève souvent : 커피 마셔요 se dit aussi."
+        ],
+        "forms": [["를", "après une voyelle", "커피를"], ["을", "après une consonne", "물을"]]
+      },
+      "items": [
+        { "id": "gr-reul-coffee", "ko": "커피를 마셔요", "rom": "keopireul masyeoyo", "fr": "Je bois du café", "tiles": ["커피를", "마셔요"], "gap": { "before": "커피", "answer": "를", "options": ["를", "을"] } },
+        { "id": "gr-eul-water", "ko": "물을 마셔요", "rom": "mureul masyeoyo", "fr": "Je bois de l'eau", "tiles": ["물을", "마셔요"], "gap": { "before": "물", "answer": "을", "options": ["를", "을"] } },
+        { "id": "gr-reul-kimchi", "ko": "김치를 먹어요", "rom": "gimchireul meogeoyo", "fr": "Je mange du kimchi", "tiles": ["김치를", "먹어요"], "gap": { "before": "김치", "answer": "를", "options": ["를", "을"] } },
+        { "id": "gr-reul-ticket", "ko": "표를 사요", "rom": "pyoreul sayo", "fr": "J'achète un billet", "tiles": ["표를", "사요"], "gap": { "before": "표", "answer": "를", "options": ["를", "을"] } },
+        { "id": "gr-eul-rice", "ko": "밥을 먹어요", "rom": "babeul meogeoyo", "fr": "Je prends mon repas", "note": "밥 = riz, et par extension le repas", "tiles": ["밥을", "먹어요"], "gap": { "before": "밥", "answer": "을", "options": ["를", "을"] } },
+        { "id": "gr-reul-korean", "ko": "한국어를 공부해요", "rom": "hangugeoreul gongbuhaeyo", "fr": "J'étudie le coréen", "note": "공부해요 = étudier", "tiles": ["한국어를", "공부해요"], "gap": { "before": "한국어", "answer": "를", "options": ["를", "을"] } }
+      ]
+    },
+    {
+      "id": "gr-l6",
+      "title": "Aller quelque part : 에 가요",
+      "rule": {
+        "text": [
+          "에 se colle après un lieu pour dire où on va : [lieu]에 가요 = je vais à [lieu].",
+          "Bonne nouvelle : 에 ne change jamais, voyelle ou consonne.",
+          "Il marque aussi l'heure : 세 시에 = à 3 h. Et pour demander : 어디에 가요? = où vas-tu ?"
+        ]
+      },
+      "items": [
+        { "id": "gr-e-myeongdong", "ko": "명동에 가요", "rom": "myeongdonge gayo", "fr": "Je vais à Myeongdong", "tiles": ["명동에", "가요"] },
+        { "id": "gr-e-airport", "ko": "공항에 가요", "rom": "gonghange gayo", "fr": "Je vais à l'aéroport", "tiles": ["공항에", "가요"] },
+        { "id": "gr-e-where", "ko": "어디에 가요?", "rom": "eodie gayo?", "fr": "Où vas-tu ?", "note": "어디 = où", "tiles": ["어디에", "가요?"] },
+        { "id": "gr-e-busan", "ko": "내일 부산에 가요", "rom": "naeil busane gayo", "fr": "Demain, je vais à Busan", "tiles": ["내일", "부산에", "가요"] },
+        { "id": "gr-e-time", "ko": "세 시에 만나요", "rom": "se sie mannayo", "fr": "On se voit à 3 h", "note": "세 시 = 3 h (nombre natif + 시). 만나요 = se voir, se retrouver", "tiles": ["세", "시에", "만나요"] },
+        { "id": "gr-e-pharmacy", "ko": "약국에 가요", "rom": "yakguge gayo", "fr": "Je vais à la pharmacie", "tiles": ["약국에", "가요"] }
+      ]
+    },
+    {
+      "id": "gr-l7",
+      "title": "Poli ou très poli : 요 / 습니다",
+      "rule": {
+        "text": [
+          "Il y a deux façons polies de finir une phrase. Les deux sont correctes avec un inconnu.",
+          "-요 : poli, de tous les jours. C'est ce que tu utiliseras le plus : 고마워요, 괜찮아요.",
+          "-습니다 / -ㅂ니다 : très poli, plus formel. Tu l'entendras dans les annonces, les magasins, et pour remercier ou s'excuser : 감사합니다, 죄송합니다.",
+          "Entre amis proches, on enlève même le 요, mais évite-le au début : ça peut sembler impoli."
+        ]
+      },
+      "items": [
+        { "id": "gr-pol-thanks", "ko": "고마워요", "rom": "gomawoyo", "fr": "Merci (poli, courant)", "note": "Plus chaleureux et un peu moins formel que 감사합니다" },
+        { "id": "gr-pol-sorry", "ko": "미안해요", "rom": "mianhaeyo", "fr": "Pardon (poli, courant)", "note": "La version très polie est 죄송합니다" },
+        { "id": "gr-pol-understood", "ko": "알겠습니다", "rom": "algetseumnida", "fr": "Bien compris (très poli)", "note": "Version très polie de 알겠어요" },
+        { "id": "gr-pol-nice", "ko": "반갑습니다", "rom": "bangapseumnida", "fr": "Enchanté(e) (très poli)", "note": "Version très polie de 반가워요" },
+        { "id": "gr-pol-fine", "ko": "괜찮습니다", "rom": "gwaenchanseumnida", "fr": "Ça va / Pas de souci (très poli)", "note": "Version très polie de 괜찮아요" }
+      ]
+    },
+    {
+      "id": "gr-l8",
+      "title": "Dire non : 안",
+      "rule": {
+        "text": [
+          "Pour dire « ne… pas », on met 안 juste avant le verbe ou l'adjectif : 가요 (je vais) → 안 가요 (je n'y vais pas).",
+          "Le reste de la phrase ne bouge pas : 고기 안 먹어요 = je ne mange pas de viande.",
+          "Deux exceptions à connaître : le contraire de 있어요 est 없어요, et « je ne sais pas » se dit 몰라요."
+        ]
+      },
+      "items": [
+        { "id": "gr-an-spicy", "ko": "안 매워요?", "rom": "an maewoyo?", "fr": "Ce n'est pas épicé ?", "note": "매워요 = c'est épicé", "tiles": ["안", "매워요?"] },
+        { "id": "gr-an-go", "ko": "안 가요", "rom": "an gayo", "fr": "Je n'y vais pas", "tiles": ["안", "가요"] },
+        { "id": "gr-an-meat", "ko": "고기 안 먹어요", "rom": "gogi an meogeoyo", "fr": "Je ne mange pas de viande", "note": "고기 = viande. 안 se place juste avant le verbe", "tiles": ["고기", "안", "먹어요"] },
+        { "id": "gr-an-expensive", "ko": "안 비싸요", "rom": "an bissayo", "fr": "Ce n'est pas cher", "tiles": ["안", "비싸요"] },
+        { "id": "gr-an-alcohol", "ko": "오늘은 술 안 마셔요", "rom": "oneureun sul an masyeoyo", "fr": "Aujourd'hui, je ne bois pas d'alcool", "note": "술 = alcool", "tiles": ["오늘은", "술", "안", "마셔요"] }
+      ]
+    }
+  ]
+}
