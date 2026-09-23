@@ -129,3 +129,4 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .jamo { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 14px; font-size: 30px; font-weight: 700; background: color-mix(in srgb, var(--accent) 15%, transparent); }
 .field.left { width: 100%; text-align: left; }
 .spell-word .spell { padding: 6px; border-radius: 16px; background: color-mix(in srgb, var(--text) 6%, transparent); }
+.choice small.rom { display: block; font-size: 14px; font-weight: 600; margin-top: 2px; }

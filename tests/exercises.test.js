@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { shuffle, pickExercise, buildQuestion, checkTyped, checkTiles } from '../exercises.js';
+import { shuffle, pickExercise, buildQuestion, checkTyped, checkTiles, lettersOf, canRead } from '../exercises.js';
 
 const pool = [
   { id: 'a', ko: '가', fr: 'ga' }, { id: 'b', ko: '나', fr: 'na' }, { id: 'c', ko: '다', fr: 'da' },
@@ -73,4 +73,23 @@ test('pickExercise respects unit and voice', () => {
   const b = new Set();
   for (let i = 0; i < 500; i++) b.add(pickExercise({ tiles: ['x'] }, 'phrases', Math.random, true));
   assert.deepEqual([...b].sort(), ['build', 'flashcard', 'listen', 'recognize', 'reverse', 'shadow', 'type']);
+});
+
+test('letters of a word: initials, vowels and each consonant of the final', () => {
+  assert.deepEqual(lettersOf('안녕').sort(), ['ㄴ', 'ㅇ', 'ㅏ', 'ㅕ'].sort());
+  assert.deepEqual(lettersOf('닭').sort(), ['ㄷ', 'ㅏ', 'ㄹ', 'ㄱ'].sort());
+  assert.deepEqual(lettersOf('과 !'), ['ㄱ', 'ㅘ']);
+  assert.ok(canRead('안녕', new Set([...'ㅇㅏㄴㅕ'])));
+  assert.ok(!canRead('안녕하세요', new Set([...'ㅇㅏㄴㅕ'])));
+});
+
+test('words that cannot be read yet only get button exercises', () => {
+  const typing = new Set(['flashcard', 'type', 'build']);
+  for (let i = 0; i < 500; i++) {
+    assert.ok(!typing.has(pickExercise({ tiles: ['x'] }, 'phrases', Math.random, true, false)));
+    assert.ok(!typing.has(pickExercise({}, 'hangul', Math.random, false, false)));
+  }
+  const seen = new Set();
+  for (let i = 0; i < 500; i++) seen.add(pickExercise({ tiles: ['x'] }, 'phrases', Math.random, true, true));
+  assert.ok(seen.has('type') && seen.has('flashcard') && seen.has('build'));
 });

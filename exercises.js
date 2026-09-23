@@ -7,11 +7,12 @@ export function shuffle(arr, rand = Math.random) {
   return a;
 }
 
-export function pickExercise(item, unitId, rand = Math.random, hasVoice = true) {
-  const types = ['flashcard', 'recognize', 'type'];
+// Typing or ordering Korean only once every letter of the item has been learned; buttons before that.
+export function pickExercise(item, unitId, rand = Math.random, hasVoice = true, readable = true) {
+  const types = readable ? ['flashcard', 'recognize', 'type'] : ['recognize'];
   if (unitId !== 'hangul') types.push('reverse');
   if (hasVoice) types.push('listen');
-  if (item.tiles) types.push('build');
+  if (item.tiles && readable) types.push('build');
   if (unitId === 'phrases' && hasVoice) types.push('shadow');
   return types[Math.floor(rand() * types.length)];
 }
@@ -62,3 +63,19 @@ export const normalize = s => [...s.normalize('NFC').replace(/[\s.,!?~'"…]/g, 
   .map(toJamo).join('').replace(CLUSTER_RE, m => CLUSTERS[m]);
 export const checkTyped = (input, item) => normalize(input) === normalize(item.ko);
 export const checkTiles = (order, item) => order.join(' ') === item.tiles.join(' ');
+
+// Letters a learner must know to read a word: initial, vowel, and each consonant of the final.
+export function lettersOf(ko) {
+  const out = new Set();
+  for (const ch of ko.normalize('NFC')) {
+    const c = ch.codePointAt(0);
+    if (c < 0xac00 || c > 0xd7a3) continue;
+    const i = c - 0xac00;
+    out.add(LEAD[Math.floor(i / 588)]);
+    out.add(VOWEL[Math.floor((i % 588) / 28)]);
+    const t = TAIL[i % 28];
+    if (t) for (const x of CLUSTERS[t] ?? t) out.add(x);
+  }
+  return [...out];
+}
+export const canRead = (ko, known) => lettersOf(ko).every(j => known.has(j));

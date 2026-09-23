@@ -1,7 +1,7 @@
 import { load, save, importState } from './store.js';
 import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
-import { pickExercise, buildQuestion, checkTyped, checkTiles } from './exercises.js';
+import { pickExercise, buildQuestion, checkTyped, checkTiles, canRead } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
 import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
 import * as T from './tutor.js';
@@ -170,8 +170,17 @@ function prepare() {
   const step = session.queue[session.pos];
   if (!step) { session.current = null; return; }
   const { item, unit } = byId[step.id];
-  const type = step.kind === 'intro' ? 'intro' : step.kind === 'card' ? 'flashcard' : pickExercise(item, unit.id, Math.random, !!voice);
-  session.current = { ...buildQuestion(type, item, unit.items), unit: unit.id };
+  const readable = canRead(item.ko, knownLetters());
+  const type = step.kind === 'intro' ? 'intro'
+    : step.kind === 'card' ? (readable ? 'flashcard' : unit.id === 'hangul' ? 'recognize' : 'reverse')
+    : pickExercise(item, unit.id, Math.random, !!voice, readable);
+  session.current = { ...buildQuestion(type, item, unit.items), unit: unit.id, readable };
+}
+
+// Letters learned so far: the Hangul letter cards already opened.
+function knownLetters() {
+  const hangul = units.find(u => u.id === 'hangul');
+  return new Set(hangul.items.filter(it => state.cards[it.id] && [...it.ko].length === 1 && !isSyllable(it.ko)).map(it => it.ko));
 }
 
 function advance() {
@@ -181,11 +190,12 @@ function advance() {
 }
 
 const size = ko => (ko.length > 4 ? 'lg' : 'xl');
-const rom = (q, always) => (state.showRom && (always || q.unit !== 'hangul') ? `<p class="rom">${esc(q.item.rom)}</p>` : '');
+// Romanization shows while the word can't be read yet; once its letters are learned, exercises hide it.
+const rom = (q, always) => (state.showRom && (always || (q.unit !== 'hangul' && !q.readable)) ? `<p class="rom">${esc(q.item.rom)}</p>` : '');
 const audioBtn = () => (voice ? '<button class="icon-btn audio" data-say aria-label="Écouter">🔊</button>' : '');
 const full = q => `<p class="ko ${size(q.item.ko)}">${esc(q.item.ko)}</p>${rom(q, true)}<p class="fr">${esc(q.item.fr)}</p>${q.item.note ? `<p class="note">${esc(q.item.note)}</p>` : ''}`;
 const choices = (q, key) => `<div class="choices">${q.choices.map((c, i) =>
-  `<button class="choice${key === 'ko' ? ' ko' : ''}" data-i="${i}">${esc(c[key])}</button>`).join('')}</div>`;
+  `<button class="choice${key === 'ko' ? ' ko' : ''}" data-i="${i}">${esc(c[key])}${key === 'ko' && state.showRom && !q.readable ? `<small class="rom">${esc(c.rom)}</small>` : ''}</button>`).join('')}</div>`;
 
 const VIEWS = {
   intro: q => `<p class="label">Nouveau</p><div class="flash">${full(q)}</div>${audioBtn()}<button class="primary" id="next">Compris</button>`,
