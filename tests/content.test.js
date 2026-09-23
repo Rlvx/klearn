@@ -49,3 +49,9 @@ test('every file the app loads is cached for offline use', () => {
   const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
   for (const u of units) assert.ok(sw.includes(`content/${u.id}.json`), u.id);
 });
+
+test('every module of the app is precached', () => {
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+  for (const [, file] of html.matchAll(/from '\.\/([\w-]+\.js)'/g)) assert.ok(sw.includes(`'${file}'`), file);
+});

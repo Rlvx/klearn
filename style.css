@@ -135,3 +135,11 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .forms { border-collapse: collapse; width: 100%; margin-top: 4px; }
 .forms td { padding: 8px 6px; border-top: 1px solid var(--line); font-size: 15px; }
 .forms td.ko { font-size: 20px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.add-word input[type=text] { font-size: 18px; }
+.add-word label.secondary { flex-direction: column; align-items: center; gap: 0; }
+.add-word label small { font-weight: 500; color: var(--muted); font-size: 13px; }
+.phrase.mine { flex-direction: row; align-items: center; gap: 8px; }
+.phrase.mine .say { flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.ocr-word { gap: 8px; }
+.ocr-word .diff-head small { color: var(--muted); }
+.ocr-word input[type=text] { font-size: 18px; padding: 10px 14px; }

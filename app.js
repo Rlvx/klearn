@@ -5,11 +5,13 @@ import { pickExercise, buildQuestion, checkTyped, checkTiles, canRead } from './
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
 import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
 import * as T from './tutor.js';
+import * as M from './mine.js';
 
 const UNIT_IDS = ['hangul', 'phrases', 'vocab', 'grammar'];
 const app = document.getElementById('app');
 const byId = {};
 const lessonById = {};
+const mine = { id: 'mine', title: 'Mes mots', icon: '✍️', lessons: [], items: [] };
 let units = [];
 let patterns = [];
 let state = load();
@@ -56,6 +58,7 @@ function route() {
   else if (screen === 'games') renderGames();
   else if (screen === 'game') renderGame(arg);
   else if (screen === 'tutor') arg === 'go' ? startTutor() : renderTutorHome();
+  else if (screen === 'mine') renderMine();
   else if (screen === 'settings') renderSettings();
   else renderHome();
   window.scrollTo(0, 0);
@@ -78,11 +81,12 @@ function renderHome() {
     <section class="units">
       <a class="unit" href="#/tutor"><span class="ko">🧑‍🏫</span><div><b>Mon tuteur</b><small>Exercices ciblés sur tes difficultés</small></div></a>
       ${units.map(u => `<a class="unit" href="#/unit/${u.id}"><span class="ko">${esc(u.icon)}</span><div><b>${esc(u.title)}</b><small>${u.lessons.filter(l => lessonDone(l, state.cards)).length}/${u.lessons.length} leçons</small></div></a>`).join('')}
+      <a class="unit" href="#/mine"><span class="ko">✍️</span><div><b>Mes mots</b><small>${state.custom.length} mot${state.custom.length > 1 ? 's' : ''} · ajoute ce que tu croises, même en photo</small></div></a>
       <a class="unit" href="#/games"><span class="ko">🎮</span><div><b>Jeux</b><small>Syllabes, frappe, dictée, phrases à trous</small></div></a>
       <a class="unit" href="#/cards"><span class="ko">🃏</span><div><b>Mes cartes</b><small>${Object.keys(state.cards).filter(id => byId[id]).length} mots vus · flashcards</small></div></a>
       <a class="unit" href="#/field"><span class="ko">💬</span><div><b>Sur le terrain</b><small>Phrases à montrer ou faire écouter</small></div></a>
     </section>`;
-  $('#start').onclick = () => startSession(buildSession(units, state.cards, Date.now()));
+  $('#start').onclick = () => startSession(buildSession([...units, mine], state.cards, Date.now()));
 }
 
 function renderUnit(id) {
@@ -113,13 +117,13 @@ function renderField(lessonId) {
 
 function renderCards(unitId) {
   const now = Date.now();
-  const unit = units.find(u => u.id === unitId);
-  const items = (unit ? unit.items : units.flatMap(u => u.items))
+  const unit = [...units, mine].find(u => u.id === unitId);
+  const items = (unit ? unit.items : [...units, mine].flatMap(u => u.items))
     .filter(it => state.cards[it.id])
     .sort((a, b) => state.cards[a.id].due - state.cards[b.id].due);
   const when = due => (due <= now ? 'à réviser' : `dans ${Math.ceil((due - now) / DAY)} j`);
   const chip = (id, label) => `<a class="chip${(unit?.id ?? '') === id ? ' on' : ''}" href="#/cards${id ? '/' + id : ''}">${esc(label)}</a>`;
-  app.innerHTML = header('Mes cartes', '#/') + `<nav class="chips">${chip('', 'Tout')}${units.map(u => chip(u.id, u.title)).join('')}</nav>
+  app.innerHTML = header('Mes cartes', '#/') + `<nav class="chips">${chip('', 'Tout')}${[...units, mine].map(u => chip(u.id, u.title)).join('')}</nav>
     <button class="primary big" id="review" ${items.length ? '' : 'disabled'}>Réviser en flashcards (${Math.min(20, items.length)})</button>
     ${items.length ? '' : '<p class="notice">Aucun mot vu ici pour l\'instant. Commence une leçon !</p>'}
     <section class="field">${items.map(it =>
@@ -153,6 +157,7 @@ function renderSettings() {
     try {
       state = importState(await file.text());
       persist();
+      refreshMine();
       $('#msg').textContent = 'Progression importée ✓';
     } catch {
       $('#msg').textContent = 'Fichier invalide, rien n\'a été changé.';
@@ -176,7 +181,8 @@ function prepare() {
   const type = step.kind === 'intro' ? 'intro'
     : step.kind === 'card' ? (readable ? 'flashcard' : unit.id === 'hangul' ? 'recognize' : 'reverse')
     : pickExercise(item, unit.id, Math.random, !!voice, readable);
-  session.current = { ...buildQuestion(type, item, unit.items), unit: unit.id, readable };
+  const pool = unit === mine ? [...mine.items, ...units.find(u => u.id === 'vocab').items] : unit.items;
+  session.current = { ...buildQuestion(type, item, pool), unit: unit.id, readable };
 }
 
 // Letters learned so far: the Hangul letter cards already opened.
@@ -805,6 +811,151 @@ function tutorSummary() {
   $('#again').onclick = startTutor;
 }
 
+// --- my words ---
+const OCR_SCRIPT = 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';
+
+// Own words live in state.custom; this registers them like content items.
+function refreshMine() {
+  for (const id of Object.keys(byId)) if (byId[id].unit === mine) delete byId[id];
+  mine.items = state.custom;
+  mine.lessons = [{ id: 'my-l', title: 'Mes mots', items: state.custom }];
+  for (const item of state.custom) byId[item.id] = { item, unit: mine };
+}
+
+// Vocabulary and phrases first: a word should match its meaning, not a Hangul reading drill.
+const contentItems = () => [...units.filter(u => u.id !== 'hangul'), ...units.filter(u => u.id === 'hangul')].flatMap(u => u.items);
+
+function addWord(ko, fr, note = '') {
+  const existing = M.findExisting(ko, contentItems());
+  if (existing) {
+    const had = !!state.cards[existing.id];
+    state.cards[existing.id] ??= newCard(Date.now());
+    persist();
+    const where = byId[existing.id].unit.title;
+    return `« ${existing.ko} » est déjà dans l'app (${where} : ${existing.fr}). ${had ? 'Il est déjà dans tes révisions.' : 'Je l\'ai ajouté à tes révisions.'}`;
+  }
+  if (state.custom.some(it => it.ko === ko.normalize('NFC').trim())) return `« ${ko} » est déjà dans tes mots.`;
+  const item = M.makeCustom(ko, fr, note, Date.now());
+  state.custom.unshift(item);
+  state.cards[item.id] = newCard(Date.now());
+  persist();
+  refreshMine();
+  return null;
+}
+
+function renderMine() {
+  const now = Date.now();
+  const when = id => (state.cards[id]?.due <= now ? 'à réviser' : `dans ${Math.ceil((state.cards[id].due - now) / DAY)} j`);
+  app.innerHTML = header('Mes mots', '#/') + `
+    <section class="settings add-word">
+      <input type="text" id="ko" lang="ko" autocomplete="off" placeholder="Mot en coréen (한글)">
+      <input type="text" id="fr" autocomplete="off" placeholder="Traduction en français">
+      <input type="text" id="where" autocomplete="off" placeholder="Où tu l'as vu (facultatif)">
+      <div class="row2"><a class="secondary" id="tr" target="_blank" rel="noopener">🔎 Traduire</a><button class="primary" id="add">Ajouter</button></div>
+      <p id="msg" class="note"></p>
+      <label class="secondary">📷 Depuis une photo <small>(expérimental, connexion requise la 1re fois)</small><input type="file" id="photo" accept="image/*" hidden></label>
+      <div id="ocr"></div>
+    </section>
+    ${state.custom.length ? `<button class="primary big" id="review">Réviser mes mots (${Math.min(20, state.custom.length)})</button>` : ''}
+    <section class="field">${state.custom.map(it => `<div class="phrase mine" data-id="${it.id}">
+      <button class="say" data-say="${it.id}"><span class="ko">${esc(it.ko)}</span><small>${esc(it.rom)} · ${when(it.id)}</small><span>${esc(it.fr)}</span>${it.note ? `<small>📍 ${esc(it.note)}</small>` : ''}</button>
+      <button class="icon-btn del" data-del="${it.id}" aria-label="Supprimer">🗑</button></div>`).join('')}</section>`;
+  const ko = $('#ko');
+  const fr = $('#fr');
+  const syncTr = () => { $('#tr').href = M.translateUrl(ko.value.trim() || '안녕하세요'); };
+  ko.oninput = syncTr;
+  syncTr();
+  $('#add').onclick = () => {
+    const msg = $('#msg');
+    if (!M.hasHangul(ko.value)) { msg.textContent = 'Écris le mot en hangeul (clavier coréen).'; return ko.focus(); }
+    if (!fr.value.trim()) { msg.textContent = 'Ajoute la traduction : 🔎 Traduire peut t\'aider.'; return fr.focus(); }
+    const info = addWord(ko.value, fr.value, $('#where').value);
+    if (info) { msg.textContent = info; return; }
+    buzz(30);
+    renderMine();
+    $('#msg').textContent = 'Ajouté ✓ Il arrive dans ta prochaine session.';
+  };
+  $('#review')?.addEventListener('click', () => startSession(cardSession(state.custom.map(it => it.id), state.cards)));
+  app.querySelectorAll('[data-say]').forEach(b => { b.onclick = () => say(byId[b.dataset.say].item); });
+  app.querySelectorAll('[data-del]').forEach(b => {
+    b.onclick = () => {
+      const it = state.custom.find(x => x.id === b.dataset.del);
+      if (!it || !confirm(`Supprimer « ${it.ko} » de tes mots ?`)) return;
+      state.custom = state.custom.filter(x => x !== it);
+      delete state.cards[it.id];
+      persist();
+      refreshMine();
+      renderMine();
+    };
+  });
+  $('#photo').onchange = e => { const f = e.target.files[0]; if (f) readPhoto(f); };
+}
+
+function loadOcr() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = OCR_SCRIPT;
+    s.onload = () => resolve(window.Tesseract);
+    s.onerror = () => reject(new Error('script'));
+    document.head.append(s);
+  });
+}
+
+// Large phone photos are slow to read: scale down to 1600 px first.
+async function shrink(file) {
+  const img = await createImageBitmap(file);
+  const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * k);
+  c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
+async function readPhoto(file) {
+  const box = $('#ocr');
+  const status = t => { if ($('#ocr') === box) box.innerHTML = `<p class="notice">${t}</p>`; };
+  status('Chargement de la lecture de texte…');
+  let worker;
+  try {
+    const Tesseract = await loadOcr();
+    worker = await Tesseract.createWorker('kor', 1, {
+      logger: m => { if (m.status === 'recognizing text') status(`Lecture de la photo… ${Math.round(m.progress * 100)} %`); },
+    });
+    status('Lecture de la photo…');
+    const { data } = await worker.recognize(await shrink(file));
+    showWords(M.wordsFromText(data.text, M.knownWords([...contentItems(), ...state.custom])));
+  } catch {
+    status(navigator.onLine ? 'La lecture a échoué. Essaie une photo plus nette, bien de face.' : 'Il faut une connexion la première fois pour télécharger la lecture de texte (~5 Mo).');
+  } finally {
+    worker?.terminate();
+  }
+}
+
+function showWords({ fresh, old }) {
+  const box = $('#ocr');
+  if (!box) return;
+  box.innerHTML = `${fresh.length ? `<p class="label">Mots nouveaux (${fresh.length})</p>` : '<p class="notice">Aucun mot nouveau trouvé. Essaie une photo plus nette, bien de face.</p>'}
+    <div class="field">${fresh.map((w, i) => `<div class="phrase ocr-word" data-i="${i}">
+      <div class="diff-head"><span class="ko lg">${esc(w)}</span><small>${esc(M.autoRom(w))}</small></div>
+      <input type="text" placeholder="Traduction" autocomplete="off">
+      <div class="row2"><a class="secondary" href="${M.translateUrl(w)}" target="_blank" rel="noopener">🔎 Traduire</a><button class="primary">Ajouter</button></div>
+    </div>`).join('')}</div>
+    ${old.length ? `<p class="note">Déjà connus : <span class="ko">${old.map(esc).join(' · ')}</span></p>` : ''}
+    <p class="note">La lecture peut se tromper : vérifie chaque mot avant de l'ajouter.</p>`;
+  box.querySelectorAll('.ocr-word').forEach(row => {
+    row.querySelector('button').onclick = () => {
+      const w = fresh[+row.dataset.i];
+      const tr = row.querySelector('input');
+      if (!tr.value.trim()) { tr.placeholder = 'Ajoute la traduction d\'abord'; return tr.focus(); }
+      const info = addWord(w, tr.value, 'photo');
+      row.innerHTML = `<p>${info ? esc(info) : `<span class="ko">${esc(w)}</span> ajouté ✓`}</p>`;
+      buzz(30);
+    };
+  });
+}
+
 // --- boot ---
 async function boot() {
   navigator.storage?.persist?.();
@@ -813,6 +964,7 @@ async function boot() {
     units = data.map(u => ({ ...u, items: u.lessons.flatMap(l => l.items) }));
     for (const unit of units) for (const item of unit.items) byId[item.id] = { item, unit };
     for (const unit of units) for (const lesson of unit.lessons) lessonById[lesson.id] = lesson;
+    refreshMine();
     ({ patterns } = await fetch('content/patterns.json').then(r => r.json()));
     initVoice();
     window.addEventListener('hashchange', route);
