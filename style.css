@@ -143,3 +143,14 @@ input:focus { outline: none; border-color: var(--accent-2); }
 .ocr-word { gap: 8px; }
 .ocr-word .diff-head small { color: var(--muted); }
 .ocr-word input[type=text] { font-size: 18px; padding: 10px 14px; }
+.flash.reading { align-items: stretch; text-align: left; gap: 8px; position: relative; }
+.rline { font-size: 22px; line-height: 1.7; }
+.rline .who { display: block; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tok { background: none; border: 0; padding: 0 1px; font: inherit; color: inherit; border-bottom: 2px dotted var(--line); cursor: pointer; }
+.tok.proof { background: color-mix(in srgb, var(--good) 25%, transparent); border-radius: 6px; border-bottom-color: var(--good); }
+.question { font-size: 19px; font-weight: 700; }
+.question small { display: block; font-size: 13px; color: var(--muted); font-weight: 600; }
+.choices.wide { grid-template-columns: 1fr; }
+.choices.wide .choice { font-size: 17px; padding: 14px; }
+.locked-text { gap: 6px; opacity: .85; }
+.locked-text small { color: var(--muted); }

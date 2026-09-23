@@ -47,7 +47,7 @@ test('grammar lessons have a rule, and every gap follows it', () => {
 
 test('every file the app loads is cached for offline use', () => {
   const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
-  for (const u of units) assert.ok(sw.includes(`content/${u.id}.json`), u.id);
+  for (const f of [...units.map(u => u.id), 'patterns', 'reading']) assert.ok(sw.includes(`content/${f}.json`), f);
 });
 
 test('every module of the app is precached', () => {

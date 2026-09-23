@@ -6,6 +6,7 @@ import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } 
 import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
 import * as T from './tutor.js';
 import * as M from './mine.js';
+import * as R from './reading.js';
 
 const UNIT_IDS = ['hangul', 'phrases', 'vocab', 'grammar'];
 const app = document.getElementById('app');
@@ -14,6 +15,8 @@ const lessonById = {};
 const mine = { id: 'mine', title: 'Mes mots', icon: '✍️', lessons: [], items: [] };
 let units = [];
 let patterns = [];
+let texts = [];
+let readRun = null;
 let state = load();
 let voice = null;
 let session = null;
@@ -50,6 +53,7 @@ function route() {
   const [, screen, arg] = location.hash.split('/');
   if (screen !== 'session') session = null;
   if (screen !== 'tutor') tutor = null;
+  if (screen !== 'read' || !arg) readRun = null;
   stopGame();
   if (screen === 'unit') renderUnit(arg);
   else if (screen === 'session') session ? renderSession() : (location.hash = '#/');
@@ -59,6 +63,7 @@ function route() {
   else if (screen === 'game') renderGame(arg);
   else if (screen === 'tutor') arg === 'go' ? startTutor() : renderTutorHome();
   else if (screen === 'mine') renderMine();
+  else if (screen === 'read') arg ? renderRead(arg) : renderReadList();
   else if (screen === 'settings') renderSettings();
   else renderHome();
   window.scrollTo(0, 0);
@@ -81,6 +86,7 @@ function renderHome() {
     <section class="units">
       <a class="unit" href="#/tutor"><span class="ko">🧑‍🏫</span><div><b>Mon tuteur</b><small>Exercices ciblés sur tes difficultés</small></div></a>
       ${units.map(u => `<a class="unit" href="#/unit/${u.id}"><span class="ko">${esc(u.icon)}</span><div><b>${esc(u.title)}</b><small>${u.lessons.filter(l => lessonDone(l, state.cards)).length}/${u.lessons.length} leçons</small></div></a>`).join('')}
+      <a class="unit" href="#/read"><span class="ko">📖</span><div><b>Lire et comprendre</b><small>${Object.keys(state.reading).length}/${texts.length} textes lus · de petits textes et des questions</small></div></a>
       <a class="unit" href="#/mine"><span class="ko">✍️</span><div><b>Mes mots</b><small>${state.custom.length} mot${state.custom.length > 1 ? 's' : ''} · ajoute ce que tu croises, même en photo</small></div></a>
       <a class="unit" href="#/games"><span class="ko">🎮</span><div><b>Jeux</b><small>Syllabes, frappe, dictée, phrases à trous</small></div></a>
       <a class="unit" href="#/cards"><span class="ko">🃏</span><div><b>Mes cartes</b><small>${Object.keys(state.cards).filter(id => byId[id]).length} mots vus · flashcards</small></div></a>
@@ -956,6 +962,112 @@ function showWords({ fresh, old }) {
   });
 }
 
+// --- reading ---
+const KIND = { sms: '📱 SMS', dialogue: '💬 Dialogue', panneau: '🪧 Panneau', annonce: '📢 Annonce', commande: '☕ Commande', texte: '📝 Texte' };
+const lessonIsDone = id => lessonById[id] && lessonDone(lessonById[id], state.cards);
+const lessonName = id => {
+  const unit = units.find(u => u.lessons.some(l => l.id === id));
+  return `${unit.title} › ${lessonById[id].title}`;
+};
+
+function renderReadList() {
+  const open = texts.filter(t => !R.missingLessons(t, lessonIsDone).length);
+  const locked = texts.filter(t => R.missingLessons(t, lessonIsDone).length);
+  const card = t => {
+    const best = state.reading[t.id]?.best;
+    return `<a class="lesson${best != null ? ' done' : ''}" href="#/read/${t.id}"><span class="ko">${KIND[t.kind].split(' ')[0]}</span>
+      <div><b>${esc(t.title)}</b><small>${best != null ? `✓ ${best}/${t.questions.length}` : `${t.questions.length} questions`}</small></div></a>`;
+  };
+  app.innerHTML = header('Lire et comprendre', '#/') + `
+    <p class="notice">Lis le texte, puis réponds aux questions. Touche un mot pour voir sa traduction : ça divise les points de la question par deux.</p>
+    ${open.length ? `<section class="lessons">${open.map(card).join('')}</section>` : '<p class="notice">Aucun texte débloqué pour l\'instant : chaque texte n\'utilise que des mots que tu as déjà vus.</p>'}
+    ${locked.length ? `<p class="label">À débloquer</p><section class="field">${locked.map(t => `<div class="phrase locked-text">
+      <b>${KIND[t.kind].split(' ')[0]} ${esc(t.title)}</b>
+      <small>Termine d'abord : ${R.missingLessons(t, lessonIsDone).map(lessonName).map(esc).join(' · ')}</small>
+      <a class="secondary" href="#/read/${t.id}">Essayer quand même</a></div>`).join('')}</section>` : ''}`;
+}
+
+function renderRead(id) {
+  const text = texts.find(t => t.id === id);
+  if (!text) { location.hash = '#/read'; return; }
+  if (!readRun || readRun.text !== text) {
+    readRun = { text, qi: 0, score: 0, xp: 0, helped: false, answered: null, opts: text.questions.map(q => R.optionsFor(q)) };
+  }
+  const r = readRun;
+  const q = text.questions[r.qi];
+  const marks = r.answered ? R.proofTokens(text, q.proof) : new Set();
+  const lines = R.tokenize(text).map(l => `<p class="rline">${l.who ? `<span class="who">${esc(l.who)}</span>` : ''}${l.tokens.map(t =>
+    `<button class="tok ko${marks.has(t.i) ? ' proof' : ''}" data-k="${esc(t.key)}">${esc(t.text)}</button>`).join(' ')}</p>`).join('');
+  app.innerHTML = `<header class="top"><a href="#/read" class="icon-btn" aria-label="Quitter">✕</a>
+      <div class="bar"><div style="width:${(r.qi / text.questions.length) * 100}%"></div></div><span class="combo">${r.score}</span></header>
+    <main class="card-area">
+      <p class="label">${KIND[text.kind]} · ${esc(text.title)}</p>
+      <div class="flash reading">${lines}${voice ? '<button class="icon-btn audio" id="snd" aria-label="Écouter">🔊</button>' : ''}</div>
+      <p id="gloss" class="note">${r.helped && !r.answered ? 'Aide utilisée : cette question vaut 5 XP.' : 'Touche un mot pour sa traduction.'}</p>
+      <p class="label">Question ${r.qi + 1}/${text.questions.length}</p>
+      <p class="question">${q.tf ? '<small>Vrai, faux ou on ne sait pas ?</small>' : ''}${esc(q.q)}</p>
+      <div class="choices wide">${r.opts[r.qi].map((o, i) => {
+        const cls = !r.answered ? '' : o === R.answerOf(q) ? ' right' : o === r.answered ? ' wrong' : '';
+        return `<button class="choice${cls}" data-i="${i}"${r.answered ? ' disabled' : ''}>${esc(o)}</button>`;
+      }).join('')}</div>
+    </main><footer id="feedback"></footer>`;
+  $('#snd')?.addEventListener('click', () => speak(R.fullText(text)));
+  app.querySelectorAll('.tok').forEach(b => {
+    b.onclick = () => {
+      const g = text.gloss[b.dataset.k];
+      if (!r.answered) r.helped = true;
+      $('#gloss').innerHTML = `<span class="ko">${esc(b.dataset.k)}</span> : ${esc(g ?? '?')}${!r.answered ? ' · <small>aide utilisée</small>' : ''}`;
+    };
+  });
+  if (r.answered) return readFeedback();
+  app.querySelectorAll('.choice').forEach(b => {
+    b.onclick = () => {
+      r.answered = r.opts[r.qi][+b.dataset.i];
+      const ok = r.answered === R.answerOf(q);
+      const pts = R.pointsFor(ok, r.helped);
+      r.lastOk = ok;
+      r.lastPts = pts;
+      if (ok) { r.score++; r.xp += pts; addXp(state, pts, Date.now()); persist(); buzz(30); } else buzz([60, 40, 60]);
+      renderRead(id);
+    };
+  });
+}
+
+function readFeedback() {
+  const r = readRun;
+  const q = r.text.questions[r.qi];
+  const last = r.qi === r.text.questions.length - 1;
+  const fb = $('#feedback');
+  fb.className = r.lastOk ? 'good' : 'bad';
+  fb.innerHTML = `<b>${r.lastOk ? `Bien compris ! +${r.lastPts} XP` : `Non : ${esc(R.answerOf(q))}`}</b>
+    <p class="tip">💡 ${esc(q.why)}</p>
+    <button class="primary" id="next">${last ? 'Voir le bilan' : 'Question suivante'}</button>`;
+  $('#next').onclick = () => {
+    if (last) return readSummary();
+    r.qi++;
+    r.answered = null;
+    r.helped = false;
+    renderRead(r.text.id);
+  };
+  fb.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function readSummary() {
+  const r = readRun;
+  const t = r.text;
+  const n = t.questions.length;
+  const prev = state.reading[t.id]?.best ?? -1;
+  state.reading[t.id] = { best: Math.max(prev, r.score), last: Date.now() };
+  persist();
+  const next = texts.find(x => x !== t && !state.reading[x.id] && !R.missingLessons(x, lessonIsDone).length);
+  app.innerHTML = `<main class="summary"><p class="big-emoji">${r.score === n ? '🏆' : '📖'}</p>
+    <h1>${r.score}/${n} bonnes réponses</h1><p>+${r.xp} XP</p>
+    <section class="field left"><div class="phrase"><p class="ko">${t.lines.map(l => `${l.who ? `${esc(l.who)} : ` : ''}${esc(l.ko)}`).join('<br>')}</p><p>${esc(t.fr)}</p></div></section>
+    ${next ? `<a class="primary big" href="#/read/${next.id}">Texte suivant : ${esc(next.title)}</a>` : ''}
+    <a class="secondary" href="#/read">Tous les textes</a></main>`;
+  readRun = null;
+}
+
 // --- boot ---
 async function boot() {
   navigator.storage?.persist?.();
@@ -966,6 +1078,7 @@ async function boot() {
     for (const unit of units) for (const lesson of unit.lessons) lessonById[lesson.id] = lesson;
     refreshMine();
     ({ patterns } = await fetch('content/patterns.json').then(r => r.json()));
+    ({ texts } = await fetch('content/reading.json').then(r => r.json()));
     initVoice();
     window.addEventListener('hashchange', route);
     route();

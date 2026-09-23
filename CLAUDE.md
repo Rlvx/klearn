@@ -13,6 +13,7 @@ The user usually writes from their phone and asks for more content, for example 
   - `tiles` is only for phrases, and `tiles.join(' ')` must equal `ko`.
 - Ids must be new and unique. Never rename, reuse or delete an existing id, because the user's progress on the phone is keyed on it. Add new lessons at the end of a unit so existing progress keeps its order.
 - In `grammar.json`, each lesson has a `rule` (`text`: short paragraphs, optional `forms`: `[form, when, example]` rows) shown before practice. An item can have a `gap` (`before`, `answer`, `options`) for the « Complète » exercise; the tests check that alternating particles (예요/이에요, 는/은, 를/을…) follow the vowel/consonant rule.
+- `content/reading.json` holds comprehension texts: `lines` (`ko`, optional `who`), `fr`, `needs` (lesson ids that must be done), `gloss` for every word as written, optional `new` (≤ 2 words not taught yet), and `questions` (`options` + `answer`, or `tf`: Vrai/Faux/On ne sait pas) with a `why` and a `proof` quoted from the text (none when the answer is « On ne sait pas »). The tests enforce all of this.
 - The learner's own words live in `state.custom` (ids `my-…`), not in `content/`.
 - In `phrases.json`, each lesson is a situation (restaurant, métro…) and also appears in the "Sur le terrain" mode.
 - Double-check the Korean spelling, the romanization and the French meaning. The user is a beginner and will trust them.

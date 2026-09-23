@@ -1,0 +1,186 @@
+{ "texts": [
+  {
+    "id": "rd-cafe", "title": "Au comptoir du café", "kind": "commande", "needs": ["ph-l3", "vo-l4"],
+    "lines": [{ "ko": "아이스 아메리카노 두 잔 주세요." }],
+    "fr": "Deux americanos glacés, s'il vous plaît.",
+    "gloss": { "아이스": "glacé (de l'anglais « ice »)", "아메리카노": "americano", "두": "deux", "잔": "tasse, verre (compteur)", "주세요": "donnez-moi, s'il vous plaît" },
+    "questions": [
+      { "q": "Combien de cafés sont commandés ?", "options": ["Un", "Deux", "Trois", "Dix"], "answer": "Deux", "proof": "두 잔", "why": "두 잔 = deux tasses." },
+      { "q": "Comment est le café ?", "options": ["Chaud", "Glacé", "Sucré", "On ne sait pas"], "answer": "Glacé", "proof": "아이스", "why": "아이스 vient de l'anglais « ice » : glacé." }
+    ]
+  },
+  {
+    "id": "rd-water", "title": "Pas de café aujourd'hui", "kind": "texte", "needs": ["gr-l4", "gr-l5"], "new": ["그런데"],
+    "lines": [{ "ko": "저는 커피를 좋아해요. 그런데 오늘은 물을 마셔요." }],
+    "fr": "J'aime bien le café. Mais aujourd'hui, je bois de l'eau.",
+    "gloss": { "저는": "moi, je (thème)", "커피를": "le café (커피 + 를)", "좋아해요": "j'aime bien", "그런데": "mais (nouveau mot)", "오늘은": "aujourd'hui (thème)", "물을": "de l'eau (물 + 을)", "마셔요": "je bois" },
+    "questions": [
+      { "q": "Qu'est-ce que la personne boit aujourd'hui ?", "options": ["Du café", "De l'eau", "Du thé", "Rien"], "answer": "De l'eau", "proof": "오늘은 물을 마셔요", "why": "오늘은 물을 마셔요 = aujourd'hui, je bois de l'eau." },
+      { "tf": "Faux", "q": "Elle n'aime pas le café.", "proof": "커피를 좋아해요", "why": "커피를 좋아해요 = j'aime bien le café." },
+      { "q": "Pourquoi boit-elle de l'eau aujourd'hui ?", "options": ["Elle est malade", "Le café est trop cher", "Elle n'aime pas le café", "On ne sait pas"], "answer": "On ne sait pas", "why": "Le texte ne donne aucune raison." }
+    ]
+  },
+  {
+    "id": "rd-busan", "title": "SMS de Minsu", "kind": "sms", "needs": ["gr-l6", "vo-l10"],
+    "lines": [{ "who": "Minsu", "ko": "내일 부산에 가요. 기차표 있어요!" }],
+    "fr": "Demain, je vais à Busan. J'ai un billet de train !",
+    "gloss": { "내일": "demain", "부산에": "à Busan (부산 + 에)", "가요": "je vais", "기차표": "billet de train (기차 + 표)", "있어요": "j'ai" },
+    "questions": [
+      { "q": "Où va Minsu ?", "options": ["À Séoul", "À Busan", "À l'aéroport", "À Myeongdong"], "answer": "À Busan", "proof": "부산에 가요", "why": "부산에 가요 = je vais à Busan." },
+      { "q": "Quand part-il ?", "options": ["Aujourd'hui", "Demain", "Hier", "On ne sait pas"], "answer": "Demain", "proof": "내일", "why": "내일 = demain." },
+      { "q": "Comment y va-t-il ?", "options": ["En train", "En avion", "En bus", "On ne sait pas"], "answer": "En train", "proof": "기차표", "why": "기차표 = billet de train (기차 + 표)." }
+    ]
+  },
+  {
+    "id": "rd-price", "title": "Au marché", "kind": "dialogue", "needs": ["ph-l4", "vo-l2", "gr-l3"],
+    "lines": [
+      { "who": "Client", "ko": "이거 얼마예요?" },
+      { "who": "Vendeuse", "ko": "만 원이에요." },
+      { "who": "Client", "ko": "너무 비싸요!" }
+    ],
+    "fr": "— Combien ça coûte ? — 10 000 wons. — C'est trop cher !",
+    "gloss": { "이거": "ça", "얼마예요": "combien ça coûte ?", "만": "dix mille", "원이에요": "c'est … wons (원 + 이에요)", "너무": "trop", "비싸요": "c'est cher" },
+    "questions": [
+      { "q": "Combien coûte l'objet ?", "options": ["1 000 wons", "10 000 wons", "100 000 wons", "5 000 wons"], "answer": "10 000 wons", "proof": "만 원이에요", "why": "만 = 10 000." },
+      { "q": "Qu'en pense le client ?", "options": ["C'est trop cher", "Ce n'est pas cher", "C'est parfait", "C'est trop petit"], "answer": "C'est trop cher", "proof": "너무 비싸요", "why": "너무 비싸요 = c'est trop cher." },
+      { "tf": "On ne sait pas", "q": "Le client achète l'objet.", "why": "Il trouve ça trop cher, mais le texte ne dit pas s'il l'achète." }
+    ]
+  },
+  {
+    "id": "rd-store", "title": "Affiche à la supérette", "kind": "panneau", "needs": ["vo-l7", "vo-l12", "gr-l2"],
+    "lines": [{ "ko": "오늘은 우유 없어요. 내일 있어요." }],
+    "fr": "Aujourd'hui, il n'y a pas de lait. Il y en aura demain.",
+    "gloss": { "오늘은": "aujourd'hui (thème)", "우유": "lait", "없어요": "il n'y a pas", "내일": "demain", "있어요": "il y en a" },
+    "questions": [
+      { "q": "Qu'est-ce qui manque aujourd'hui ?", "options": ["Le lait", "L'eau", "Le jus", "Le café"], "answer": "Le lait", "proof": "우유 없어요", "why": "우유 없어요 = il n'y a pas de lait." },
+      { "q": "Quand y en aura-t-il ?", "options": ["Ce soir", "Demain", "Jamais", "On ne sait pas"], "answer": "Demain", "proof": "내일 있어요", "why": "내일 있어요 = demain, il y en a." },
+      { "tf": "Faux", "q": "Tu peux acheter du lait ici aujourd'hui.", "proof": "오늘은 우유 없어요", "why": "오늘은 우유 없어요 : aujourd'hui, il n'y en a pas." }
+    ]
+  },
+  {
+    "id": "rd-order", "title": "Au restaurant", "kind": "dialogue", "needs": ["ph-l3", "vo-l4", "vo-l6", "vo-l7", "gr-l1"], "new": ["어서", "오세요"],
+    "lines": [
+      { "who": "Serveuse", "ko": "어서 오세요!" },
+      { "who": "Client", "ko": "두 명이에요." },
+      { "who": "Client", "ko": "불고기 하나 주세요. 맥주 두 병 주세요." }
+    ],
+    "fr": "— Bienvenue ! — Nous sommes deux. Un bulgogi, s'il vous plaît. Deux bouteilles de bière, s'il vous plaît.",
+    "gloss": { "어서": "(bienvenue, avec 오세요) — nouveau", "오세요": "(bienvenue, avec 어서) — nouveau", "두": "deux", "명이에요": "personnes, c'est… (명 = compteur de personnes)", "불고기": "bulgogi", "하나": "un", "주세요": "donnez-moi, s'il vous plaît", "맥주": "bière", "병": "bouteille" },
+    "questions": [
+      { "q": "Combien de personnes arrivent au restaurant ?", "options": ["Une", "Deux", "Trois", "On ne sait pas"], "answer": "Deux", "proof": "두 명이에요", "why": "두 명 = deux personnes." },
+      { "q": "Qu'est-ce qu'ils commandent à boire ?", "options": ["Deux bières", "Une bière", "Deux sojus", "De l'eau"], "answer": "Deux bières", "proof": "맥주 두 병", "why": "맥주 두 병 = deux bouteilles de bière." },
+      { "tf": "Faux", "q": "Ils commandent deux bulgogis.", "proof": "불고기 하나", "why": "불고기 하나 = un bulgogi." }
+    ]
+  },
+  {
+    "id": "rd-lunch", "title": "Déjeuner entre amis", "kind": "dialogue", "needs": ["gr-l5", "gr-l8", "vo-l5"],
+    "lines": [
+      { "who": "Minho", "ko": "저는 비빔밥을 먹어요." },
+      { "who": "Jisoo", "ko": "저는 고기 안 먹어요. 김밥 주세요!" }
+    ],
+    "fr": "— Moi, je prends un bibimbap. — Moi, je ne mange pas de viande. Un gimbap, s'il vous plaît !",
+    "gloss": { "저는": "moi, je (thème)", "비빔밥을": "du bibimbap (비빔밥 + 을)", "먹어요": "je mange", "고기": "viande", "안": "ne… pas", "김밥": "gimbap", "주세요": "donnez-moi, s'il vous plaît" },
+    "questions": [
+      { "q": "Que mange Minho ?", "options": ["Du bibimbap", "Du gimbap", "De la viande", "On ne sait pas"], "answer": "Du bibimbap", "proof": "비빔밥을 먹어요", "why": "비빔밥을 먹어요 = je mange du bibimbap." },
+      { "tf": "Faux", "q": "Jisoo mange de la viande.", "proof": "고기 안 먹어요", "why": "고기 안 먹어요 = je ne mange pas de viande." },
+      { "q": "Que commande Jisoo ?", "options": ["Du bibimbap", "Du gimbap", "Du bulgogi", "Rien"], "answer": "Du gimbap", "proof": "김밥 주세요", "why": "김밥 주세요 = un gimbap, s'il vous plaît." }
+    ]
+  },
+  {
+    "id": "rd-spicy", "title": "C'est épicé ?", "kind": "dialogue", "needs": ["vo-l6", "vo-l8", "ph-l1", "ph-l3"], "new": ["그런데"],
+    "lines": [
+      { "who": "Minho", "ko": "떡볶이 매워요?" },
+      { "who": "Jisoo", "ko": "네, 매워요. 그런데 맛있어요!" },
+      { "who": "Minho", "ko": "저는 김밥 먹어요." }
+    ],
+    "fr": "— Le tteokbokki, c'est épicé ? — Oui, c'est épicé. Mais c'est délicieux ! — Moi, je mange un gimbap.",
+    "gloss": { "떡볶이": "tteokbokki (gâteaux de riz épicés)", "매워요": "c'est épicé", "네": "oui", "그런데": "mais", "맛있어요": "c'est délicieux", "저는": "moi, je (thème)", "김밥": "gimbap", "먹어요": "je mange" },
+    "questions": [
+      { "q": "Comment est le tteokbokki, d'après Jisoo ?", "options": ["Épicé et délicieux", "Épicé mais pas bon", "Sucré", "Pas épicé du tout"], "answer": "Épicé et délicieux", "proof": "네, 매워요. 그런데 맛있어요", "why": "매워요 = c'est épicé ; 그런데 맛있어요 = mais c'est délicieux." },
+      { "q": "Que mange Minho ?", "options": ["Du tteokbokki", "Du gimbap", "Du bibimbap", "Rien"], "answer": "Du gimbap", "proof": "저는 김밥 먹어요", "why": "저는 김밥 먹어요 = moi, je mange du gimbap." },
+      { "tf": "Vrai", "q": "Jisoo trouve le tteokbokki bon.", "proof": "맛있어요", "why": "맛있어요 = c'est délicieux." }
+    ]
+  },
+  {
+    "id": "rd-sign", "title": "Panneau dans un centre commercial", "kind": "panneau", "needs": ["vo-l10", "vo-l11", "gr-l4"],
+    "lines": [{ "ko": "화장실은 왼쪽에 있어요. 출구는 오른쪽에 있어요." }],
+    "fr": "Les toilettes sont à gauche. La sortie est à droite.",
+    "gloss": { "화장실은": "les toilettes (thème)", "왼쪽에": "à gauche (왼쪽 + 에 : le lieu où l'on est)", "있어요": "se trouvent", "출구는": "la sortie (thème)", "오른쪽에": "à droite (오른쪽 + 에)" },
+    "questions": [
+      { "q": "Où sont les toilettes ?", "options": ["À gauche", "À droite", "Tout droit", "On ne sait pas"], "answer": "À gauche", "proof": "화장실은 왼쪽에", "why": "왼쪽 = gauche." },
+      { "q": "Tu veux sortir du bâtiment. Tu vas…", "options": ["À gauche", "À droite", "Tout droit", "Derrière"], "answer": "À droite", "proof": "출구는 오른쪽에", "why": "출구 = sortie, 오른쪽 = droite." }
+    ]
+  },
+  {
+    "id": "rd-pharmacy", "title": "Dans la rue", "kind": "dialogue", "needs": ["ph-l1", "ph-l7", "vo-l9", "vo-l11"],
+    "lines": [
+      { "who": "Toi", "ko": "저기요, 약국 어디예요?" },
+      { "who": "Passant", "ko": "저기 은행 옆에 있어요." }
+    ],
+    "fr": "— Excusez-moi, où est la pharmacie ? — Là-bas, à côté de la banque.",
+    "gloss": { "저기요": "excusez-moi", "약국": "pharmacie", "어디예요": "où est-ce ?", "저기": "là-bas", "은행": "banque", "옆에": "à côté (옆 + 에)", "있어요": "ça se trouve" },
+    "questions": [
+      { "q": "Que cherches-tu ?", "options": ["Une pharmacie", "Une banque", "Un hôpital", "Les toilettes"], "answer": "Une pharmacie", "proof": "약국 어디예요", "why": "약국 = pharmacie." },
+      { "q": "Où est-elle ?", "options": ["À côté de la banque", "Devant la gare", "Derrière l'hôpital", "On ne sait pas"], "answer": "À côté de la banque", "proof": "은행 옆에", "why": "은행 옆 = à côté de la banque." },
+      { "tf": "Faux", "q": "Le passant ne sait pas où c'est.", "proof": "저기 은행 옆에 있어요", "why": "Il te l'indique : là-bas, à côté de la banque." }
+    ]
+  },
+  {
+    "id": "rd-taxi", "title": "En taxi", "kind": "dialogue", "needs": ["gr-l6", "ph-l5", "vo-l9"],
+    "lines": [
+      { "who": "Toi", "ko": "공항에 가요. 얼마나 걸려요?" },
+      { "who": "Chauffeur", "ko": "한 시간 걸려요." }
+    ],
+    "fr": "— Je vais à l'aéroport. Combien de temps ça prend ? — Ça prend une heure.",
+    "gloss": { "공항에": "à l'aéroport (공항 + 에)", "가요": "je vais", "얼마나": "combien (de temps)", "걸려요": "ça prend (du temps)", "한": "un, une", "시간": "heure, temps" },
+    "questions": [
+      { "q": "Où vas-tu ?", "options": ["À l'aéroport", "À la gare", "À l'hôtel", "À Busan"], "answer": "À l'aéroport", "proof": "공항에 가요", "why": "공항 = aéroport." },
+      { "q": "Combien de temps dure le trajet ?", "options": ["Une heure", "Une minute", "Dix heures", "On ne sait pas"], "answer": "Une heure", "proof": "한 시간 걸려요", "why": "한 시간 = une heure ; 걸려요 = ça prend." },
+      { "tf": "On ne sait pas", "q": "Le trajet coûte cher.", "why": "On parle de la durée, pas du prix." }
+    ]
+  },
+  {
+    "id": "rd-dinner", "title": "SMS de Jisoo", "kind": "sms", "needs": ["vo-l6", "vo-l12", "gr-l2"], "new": ["같이"],
+    "lines": [{ "who": "Jisoo", "ko": "오늘 저녁에 시간 있어요? 같이 삼겹살 먹어요!" }],
+    "fr": "Tu as le temps ce soir ? On mange du samgyeopsal ensemble !",
+    "gloss": { "오늘": "aujourd'hui", "저녁에": "le soir (저녁 + 에)", "시간": "du temps", "있어요": "tu as ?", "같이": "ensemble (nouveau mot)", "삼겹살": "poitrine de porc grillée", "먹어요": "on mange (proposition)" },
+    "questions": [
+      { "q": "Que propose Jisoo ?", "options": ["Manger du samgyeopsal ensemble", "Boire un café", "Aller à Busan", "Se voir demain"], "answer": "Manger du samgyeopsal ensemble", "proof": "같이 삼겹살 먹어요", "why": "같이 = ensemble ; 삼겹살 먹어요 = on mange du samgyeopsal." },
+      { "q": "Quand ?", "options": ["Ce soir", "Ce matin", "Demain soir", "À midi"], "answer": "Ce soir", "proof": "오늘 저녁에", "why": "오늘 저녁 = ce soir." },
+      { "tf": "Faux", "q": "Jisoo sait déjà que tu es libre.", "proof": "시간 있어요?", "why": "Elle te le demande : 시간 있어요? = tu as le temps ?" }
+    ]
+  },
+  {
+    "id": "rd-hotel", "title": "Message de ton hôte", "kind": "sms", "needs": ["ph-l6", "gr-l3", "gr-l4", "vo-l12"],
+    "lines": [{ "who": "Hôte", "ko": "체크인은 세 시예요. 와이파이 비밀번호는 1234예요." }],
+    "fr": "Le check-in est à 3 h (15 h). Le mot de passe du wifi est 1234.",
+    "gloss": { "체크인은": "le check-in (thème)", "세": "trois", "시예요": "c'est … heure(s) (시 + 예요)", "와이파이": "wifi", "비밀번호는": "le mot de passe (thème)", "1234예요": "c'est 1234" },
+    "questions": [
+      { "q": "À quelle heure peux-tu faire le check-in ?", "options": ["À 3 h (15 h)", "À 10 h", "À midi", "On ne sait pas"], "answer": "À 3 h (15 h)", "proof": "체크인은 세 시예요", "why": "세 시 = 3 h ; pour un check-in, on comprend 15 h." },
+      { "tf": "Vrai", "q": "Il y a le wifi.", "proof": "와이파이 비밀번호", "why": "Ton hôte te donne le mot de passe du wifi." },
+      { "tf": "On ne sait pas", "q": "Le check-out est à 11 h.", "why": "Le message ne parle que du check-in." }
+    ]
+  },
+  {
+    "id": "rd-metro", "title": "Annonce dans le métro", "kind": "annonce", "needs": ["vo-l9", "vo-l10", "vo-l11", "gr-l7"], "new": ["다음"],
+    "lines": [{ "ko": "다음 역은 서울역입니다. 출구는 오른쪽입니다." }],
+    "fr": "La prochaine station est la gare de Séoul. La sortie est à droite.",
+    "gloss": { "다음": "prochain(e) (nouveau mot)", "역은": "la station (thème)", "서울역입니다": "c'est la gare de Séoul (très poli)", "출구는": "la sortie (thème)", "오른쪽입니다": "c'est à droite (très poli)" },
+    "questions": [
+      { "q": "Quelle est la prochaine station ?", "options": ["Gare de Séoul", "Myeongdong", "L'aéroport", "Busan"], "answer": "Gare de Séoul", "proof": "다음 역은 서울역입니다", "why": "다음 역 = la prochaine station ; 서울역 = gare de Séoul." },
+      { "q": "De quel côté faut-il sortir ?", "options": ["À gauche", "À droite", "Devant", "On ne sait pas"], "answer": "À droite", "proof": "출구는 오른쪽입니다", "why": "오른쪽 = droite." },
+      { "tf": "Vrai", "q": "L'annonce est très polie.", "proof": "입니다", "why": "-입니다 est la forme très polie de 이에요, typique des annonces." }
+    ]
+  },
+  {
+    "id": "rd-intro", "title": "Marie se présente", "kind": "texte", "needs": ["ph-l1", "ph-l2", "gr-l3", "gr-l4"], "new": ["그런데"],
+    "lines": [{ "ko": "안녕하세요! 제 이름은 마리예요. 저는 프랑스 사람이에요. 한국어는 어려워요. 그런데 좋아요!" }],
+    "fr": "Bonjour ! Je m'appelle Marie. Je suis française. Le coréen, c'est difficile. Mais j'aime bien !",
+    "gloss": { "안녕하세요": "bonjour", "제": "mon, ma (poli)", "이름은": "le nom (thème)", "마리예요": "c'est Marie", "저는": "moi, je (thème)", "프랑스": "France", "사람이에요": "je suis (une personne)", "한국어는": "le coréen (thème)", "어려워요": "c'est difficile", "그런데": "mais", "좋아요": "c'est bien, j'aime bien" },
+    "questions": [
+      { "q": "D'où vient Marie ?", "options": ["De France", "De Corée", "D'Angleterre", "On ne sait pas"], "answer": "De France", "proof": "프랑스 사람이에요", "why": "프랑스 사람 = une personne française." },
+      { "q": "Que pense-t-elle du coréen ?", "options": ["C'est difficile, mais elle aime bien", "C'est facile", "C'est difficile et elle n'aime pas", "On ne sait pas"], "answer": "C'est difficile, mais elle aime bien", "proof": "한국어는 어려워요. 그런데 좋아요", "why": "어려워요 = c'est difficile ; 그런데 좋아요 = mais j'aime bien." },
+      { "tf": "On ne sait pas", "q": "Marie a un ami coréen.", "why": "Elle ne parle pas de ses amis." }
+    ]
+  }
+]}
