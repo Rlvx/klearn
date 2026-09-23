@@ -1,7 +1,7 @@
 export const KEY = 'klearn-v1';
 
 export function defaultState() {
-  return { cards: {}, xp: {}, streak: 0, lastGoalDay: null, goal: 50, showRom: true, best: {} };
+  return { cards: {}, xp: {}, streak: 0, lastGoalDay: null, goal: 50, showRom: true, best: {}, tutor: { letters: {}, confusions: {} } };
 }
 
 export function load(storage = globalThis.localStorage) {

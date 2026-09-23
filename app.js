@@ -3,7 +3,8 @@ import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
-import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound } from './games.js';
+import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize } from './games.js';
+import * as T from './tutor.js';
 
 const UNIT_IDS = ['hangul', 'phrases', 'vocab'];
 const app = document.getElementById('app');
@@ -13,6 +14,7 @@ let patterns = [];
 let state = load();
 let voice = null;
 let session = null;
+let tutor = null;
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const $ = sel => app.querySelector(sel);
@@ -44,6 +46,7 @@ function initVoice() {
 function route() {
   const [, screen, arg] = location.hash.split('/');
   if (screen !== 'session') session = null;
+  if (screen !== 'tutor') tutor = null;
   stopGame();
   if (screen === 'unit') renderUnit(arg);
   else if (screen === 'session') session ? renderSession() : (location.hash = '#/');
@@ -51,6 +54,7 @@ function route() {
   else if (screen === 'cards') renderCards(arg);
   else if (screen === 'games') renderGames();
   else if (screen === 'game') renderGame(arg);
+  else if (screen === 'tutor') arg === 'go' ? startTutor() : renderTutorHome();
   else if (screen === 'settings') renderSettings();
   else renderHome();
   window.scrollTo(0, 0);
@@ -71,6 +75,7 @@ function renderHome() {
     <button class="primary big" id="start">Session du jour</button>
     ${voice ? '' : '<p class="notice">Pas de voix coréenne détectée. Android : Paramètres → Synthèse vocale → Google → Installer les données vocales → Coréen.</p>'}
     <section class="units">
+      <a class="unit" href="#/tutor"><span class="ko">🧑‍🏫</span><div><b>Mon tuteur</b><small>Exercices ciblés sur tes difficultés</small></div></a>
       ${units.map(u => `<a class="unit" href="#/unit/${u.id}"><span class="ko">${esc(u.icon)}</span><div><b>${esc(u.title)}</b><small>${u.lessons.filter(l => lessonDone(l, state.cards)).length}/${u.lessons.length} leçons</small></div></a>`).join('')}
       <a class="unit" href="#/games"><span class="ko">🎮</span><div><b>Jeux</b><small>Syllabes, frappe, dictée, phrases à trous</small></div></a>
       <a class="unit" href="#/cards"><span class="ko">🃏</span><div><b>Mes cartes</b><small>${Object.keys(state.cards).filter(id => byId[id]).length} mots vus · flashcards</small></div></a>
@@ -517,6 +522,255 @@ function endGame() {
     <h1>${record ? 'Nouveau record !' : 'Partie terminée'}</h1><p>${score} points · +${score} XP</p><p>Record : ${state.best[id] ?? 0}</p>
     <button class="primary big" id="again">Rejouer</button><a class="secondary" href="#/games">Autres jeux</a></main>`;
   $('#again').onclick = () => renderGame(id);
+}
+
+// --- tutor ---
+const TUTOR_XP = 10;
+const hangulItems = () => units.find(u => u.id === 'hangul').items;
+
+function tutorCtx() {
+  const items = hangulItems();
+  const known = T.knownLetters(items, state.cards);
+  return { known, weights: T.scores(state.tutor, state.cards, items, known) };
+}
+
+function nextLessonTitle() {
+  for (const u of units) {
+    const l = u.lessons.find(x => !lessonDone(x, state.cards));
+    if (l) return l.title;
+  }
+  return null;
+}
+
+const letterBox = d => `<span class="jamo ko">${esc(d.jamo)}</span>`;
+const letterRom = (slot, rom) => (slot === 2 ? `${rom} · en bas de la syllabe` : rom);
+
+function renderTutorHome() {
+  const { weights } = tutorCtx();
+  const list = T.difficulties(state.tutor, weights);
+  app.innerHTML = header('Mon tuteur', '#/') + `
+    <button class="primary big" id="go">Commencer une séance</button>
+    <p class="notice">${esc(T.advice(weights, nextLessonTitle()))}</p>
+    <p class="label">Tes difficultés</p>
+    ${list.length ? `<section class="field">${list.map(d => `<div class="phrase diff">
+      <div class="diff-head">${letterBox(d)}<div><b>${esc(letterRom(d.slot, d.rom))}</b><small>${d.seen
+        ? `${d.miss} erreur${d.miss > 1 ? 's' : ''} sur ${d.seen}`
+        : 'fragile d\'après tes cartes'}${d.got != null ? ` · confondu avec <span class="ko">${esc(d.got || 'rien')}</span> (${d.times}×)` : ''}</small></div></div>
+      <p class="tip">💡 ${esc(d.tip)}</p></div>`).join('')}</section>`
+      : '<p class="notice">Rien d\'alarmant pour l\'instant 👌</p>'}`;
+  $('#go').onclick = () => { location.hash = '#/tutor/go'; };
+}
+
+function startTutor() {
+  const words = T.wordPool(units.flatMap(u => u.items), state.cards, hangulItems());
+  tutor = { plan: T.planTypes(words.length > 0, !!voice).map(type => ({ type })), pos: 0, right: 0, xp: 0, words,
+    retried: new Set(), missed: {}, lastFocus: null, lastSyl: null, q: null };
+  tutorNext();
+}
+
+function tutorNext() {
+  const step = tutor.plan[tutor.pos];
+  if (!step) return tutorSummary();
+  const { known, weights } = tutorCtx();
+  if (step.type === 'word') {
+    tutor.q = { type: 'word', item: T.pickWord(tutor.words, weights) };
+  } else {
+    const focus = step.focus ?? T.pickFocus(weights, Math.random, tutor.lastFocus);
+    let syl;
+    for (let i = 0; i < 6 && (!syl || syl === tutor.lastSyl); i++) syl = T.makeSyllable(focus, weights, known);
+    const q = { type: step.type, focus, syl, rom: romanize(syl) };
+    if (['pickRom', 'pickKo', 'listen'].includes(q.type)) q.choices = T.choicesFor(syl, focus, known, q.type === 'listen');
+    if (q.type === 'build') Object.assign(q, T.tilesFor(syl));
+    tutor.q = q;
+    tutor.lastFocus = focus;
+    tutor.lastSyl = syl;
+  }
+  renderTutorStep();
+}
+
+const ROM_INPUT = (ph) => `<input type="text" id="typed" lang="fr" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${ph}">
+  <div class="row2"><button class="secondary" id="dunno">Je ne sais pas</button><button class="primary" id="check">Vérifier</button></div>`;
+const tChoices = (q, key) => `<div class="choices">${q.choices.map((c, i) =>
+  `<button class="choice${key === 'syl' ? ' ko' : ''}" data-i="${i}">${esc(c[key])}</button>`).join('')}</div>`;
+const sndBtn = () => (voice ? '<button class="icon-btn audio" id="snd" aria-label="Écouter">🔊</button>' : '');
+
+const TUTOR_VIEWS = {
+  read: q => `<p class="label">Lis cette syllabe</p><div class="flash"><p class="ko xl">${q.syl}</p></div>${ROM_INPUT('en lettres latines, ex : ga')}`,
+  pickRom: q => `<p class="label">Comment ça se lit ?</p><div class="flash"><p class="ko xl">${q.syl}</p></div>${tChoices(q, 'rom')}`,
+  pickKo: q => `<p class="label">Trouve la syllabe</p><div class="flash"><p class="xl">${esc(q.rom)}</p></div>${sndBtn()}${tChoices(q, 'syl')}`,
+  listen: q => `<p class="label">Qu'entends-tu ?</p><button class="play" id="snd" aria-label="Réécouter">🔊</button>${tChoices(q, 'syl')}`,
+  build: q => `<p class="label">Construis la syllabe</p><div class="flash"><p class="xl">${esc(q.rom)}</p></div>${sndBtn()}
+    <div class="picked ko" id="picked"></div><div class="tiles ko">${q.tiles.map((t, i) => `<button class="tile" data-i="${i}">${t}</button>`).join('')}</div>`,
+  word: q => `<p class="label">Déchiffre lettre par lettre</p><div class="flash"><p class="ko ${size(q.item.ko)}">${esc(q.item.ko)}</p><p class="note">${esc(q.item.fr)}</p></div>
+    ${ROM_INPUT(`sépare les syllabes : ${[...q.item.ko].filter(isSyllable).map(() => '…').join(' ')}`)}`,
+};
+
+function renderTutorStep() {
+  const q = tutor.q;
+  app.innerHTML = `<header class="top"><a href="#/tutor" class="icon-btn" aria-label="Quitter">✕</a>
+      <div class="bar"><div style="width:${(tutor.pos / tutor.plan.length) * 100}%"></div></div><span class="combo">${tutor.right}</span></header>
+    <main class="card-area">${TUTOR_VIEWS[q.type](q)}</main><footer id="feedback"></footer>`;
+  const spoken = q.type === 'word' ? q.item.say || q.item.ko : q.syl;
+  app.querySelectorAll('#snd').forEach(b => { b.onclick = () => speak(spoken); });
+  if (q.type === 'listen' || q.type === 'pickKo' || q.type === 'build') speak(spoken);
+  TUTOR_BIND[q.type](q);
+}
+
+function bindRomInput(onSubmit) {
+  const input = $('#typed');
+  const submit = typed => {
+    if (input.disabled) return;
+    input.disabled = true;
+    app.querySelectorAll('.card-area .row2 button').forEach(b => { b.disabled = true; });
+    onSubmit(typed);
+  };
+  $('#check').onclick = () => input.value.trim() && submit(input.value);
+  $('#dunno').onclick = () => submit('');
+  input.onkeydown = e => { if (e.key === 'Enter' && input.value.trim()) submit(input.value); };
+  input.focus();
+}
+
+// A choice differs from the answer only in the focus letter, so the pick names the confusion.
+function bindTutorChoices(q) {
+  const buttons = app.querySelectorAll('.choice');
+  buttons.forEach(b => {
+    b.onclick = () => {
+      const pick = q.choices[+b.dataset.i];
+      buttons.forEach((c, i) => { c.disabled = true; if (q.choices[i].syl === q.syl) c.classList.add('right'); });
+      if (pick.syl !== q.syl) b.classList.add('wrong');
+      const want = T.split(q.syl);
+      const got = T.split(pick.syl);
+      const diffs = [0, 1, 2].filter(i => want[i] !== got[i]).map(i => ({ slot: i, want: want[i], got: got[i] }));
+      tutorAnswer(q, diffs);
+    };
+  });
+}
+
+const TUTOR_BIND = {
+  read: q => bindRomInput(typed => {
+    const d = typed ? T.decode(typed, q.syl) : { ok: false, diffs: [] };
+    tutorAnswer(q, d.diffs, typed && !d.got ? 'Je n\'ai pas reconnu cette lecture.' : typed ? '' : 'Pas grave, regarde bien la décomposition.', !d.ok && !d.diffs.length);
+  }),
+  pickRom: bindTutorChoices,
+  pickKo: bindTutorChoices,
+  listen: bindTutorChoices,
+  build: q => {
+    let pos = 0;
+    const diffs = [];
+    const isVowel = j => T.slotOf(j) === 1;
+    app.querySelector('.tiles').onclick = e => {
+      const b = e.target.closest('.tile');
+      if (!b || pos === q.letters.length) return;
+      const slot = pos;
+      if (b.textContent !== q.letters[pos]) {
+        if (isVowel(b.textContent) === (slot === 1) && !diffs.some(d => d.slot === slot)) diffs.push({ slot, want: q.letters[pos], got: b.textContent });
+        buzz(80);
+        b.classList.remove('wrong');
+        void b.offsetWidth;
+        b.classList.add('wrong');
+        return;
+      }
+      b.disabled = true;
+      pos++;
+      $('#picked').textContent = q.letters.slice(0, pos).join(' ');
+      if (pos === q.letters.length) tutorAnswer(q, diffs);
+    };
+  },
+  word: q => bindRomInput(typed => tutorWordAnswer(q, typed)),
+};
+
+const spellHtml = (syl, diffs = []) => `<div class="spell">${T.spell(syl).map(p => {
+  const d = diffs.find(x => x.slot === p.slot);
+  return `<span class="${d ? 'bad' : ''}"><b class="ko">${esc(p.jamo)}</b>${esc(p.rom)}${d ? `<small>${d.got ? `pas ${esc(d.got)}` : 'oublié'}</small>` : ''}</span>`;
+}).join('')}</div>`;
+
+function tipsHtml(diffs) {
+  const tips = [...new Set(diffs.map(d => T.tipFor(d.slot, d.want, d.got)))].slice(0, 2);
+  return tips.map(t => `<p class="tip">💡 ${esc(t)}</p>`).join('');
+}
+
+// Wrong letters come back a few questions later, once each.
+function scheduleRetry(keys) {
+  for (const key of keys) {
+    if (tutor.retried.has(key) || tutor.retried.size >= 4) continue;
+    tutor.retried.add(key);
+    tutor.plan.splice(Math.min(tutor.pos + 3, tutor.plan.length), 0, { type: T.slotOf(key) === 2 ? 'pickKo' : 'read', focus: key });
+  }
+}
+
+function tutorScore(ok, marks) {
+  T.record(state.tutor, marks, Date.now());
+  for (const m of marks) {
+    if (m.ok) continue;
+    const x = (tutor.missed[m.key] ??= { got: null, n: 0 });
+    x.n++;
+    if (m.got != null) x.got = m.got;
+  }
+  if (ok) {
+    tutor.right++;
+    tutor.xp += TUTOR_XP;
+    addXp(state, TUTOR_XP, Date.now());
+    buzz(30);
+  } else {
+    buzz([60, 40, 60]);
+    scheduleRetry(marks.filter(m => !m.ok).map(m => m.key));
+  }
+  persist();
+  return marks.filter(m => m.ok && state.tutor.letters[m.key]?.streak === 3).map(m => m.key);
+}
+
+function tutorFeedback(ok, html) {
+  const fb = $('#feedback');
+  fb.className = ok ? 'good' : 'bad';
+  fb.innerHTML = `${html}<button class="primary" id="next">Continuer</button>`;
+  $('#next').onclick = () => { tutor.pos++; tutorNext(); };
+  fb.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function tutorAnswer(q, diffs, note = '', unknown = false) {
+  const marks = unknown
+    ? T.split(q.syl).flatMap((j, slot) => (slot === 2 && !j ? [] : [{ key: T.keyOf(slot, j), ok: false }]))
+    : T.marksFor(q.syl, diffs);
+  const ok = !unknown && diffs.length === 0;
+  const fixed = tutorScore(ok, marks);
+  speak(q.syl);
+  tutorFeedback(ok, `<b>${ok ? `Bien lu ! +${TUTOR_XP} XP` : 'Pas tout à fait…'}</b>
+    <p class="ko">${q.syl} <span class="rom">${esc(q.rom)}</span></p>${spellHtml(q.syl, diffs)}
+    ${note ? `<p class="note">${esc(note)}</p>` : ''}${ok ? '' : tipsHtml(diffs)}
+    ${fixed.map(k => `<p class="note">💪 <span class="ko">${esc(k.replace('_', ''))}</span> : 3 bonnes d'affilée !</p>`).join('')}`);
+}
+
+function tutorWordAnswer(q, typed) {
+  const r = typed ? T.checkWord(typed, q.item) : { ok: false, res: [...q.item.ko].filter(isSyllable).map(syl => ({ syl, diffs: [] })) };
+  const marks = r.unsplit || !typed ? [] : r.res.flatMap(x => (x.got ? T.marksFor(x.syl, x.diffs) : []));
+  const fixed = tutorScore(r.ok, marks);
+  const diffs = r.res.flatMap(x => x.diffs ?? []);
+  const changes = T.soundChanges(q.item.ko);
+  say(q.item);
+  tutorFeedback(r.ok, `<b>${r.ok ? `Bien déchiffré ! +${TUTOR_XP} XP` : 'Pas tout à fait…'}</b>
+    <div class="spell-word">${r.res.map(x => spellHtml(x.syl, x.diffs ?? [])).join('')}</div>
+    ${r.unsplit && typed ? '<p class="note">Sépare les syllabes par des espaces pour que je voie où ça coince.</p>' : ''}
+    ${r.ok ? '' : tipsHtml(diffs)}
+    <p>À l'oral : <b>${esc(q.item.rom)}</b> · ${esc(q.item.fr)}</p>
+    ${changes.map(c => `<p class="tip">🗣️ ${esc(c)}</p>`).join('')}
+    ${fixed.map(k => `<p class="note">💪 <span class="ko">${esc(k.replace('_', ''))}</span> : 3 bonnes d'affilée !</p>`).join('')}`);
+}
+
+function tutorSummary() {
+  const t = tutor;
+  const { weights } = tutorCtx();
+  const stuck = Object.entries(t.missed).sort((a, b) => b[1].n - a[1].n).slice(0, 3).map(([key, { got }]) => {
+    const slot = T.slotOf(key);
+    const j = key.replace('_', '');
+    return `<div class="phrase diff"><div class="diff-head"><span class="jamo ko">${esc(j)}</span><b>${esc(letterRom(slot, T.romLabel(slot, j)))}</b></div>
+      <p class="tip">💡 ${esc(got != null ? T.tipFor(slot, j, got.replace('_', '')) : T.letterTip(key))}</p></div>`;
+  }).join('');
+  app.innerHTML = `<main class="summary"><p class="big-emoji">${t.right === t.plan.length ? '🏆' : '🎉'}</p>
+    <h1>Séance terminée</h1><p>${t.right}/${t.plan.length} bonnes réponses · +${t.xp} XP</p>
+    ${stuck ? `<p class="label">À retenir</p><section class="field left">${stuck}</section>` : '<p>Aucune erreur, bravo !</p>'}
+    <p class="notice">${esc(T.advice(weights, nextLessonTitle()))}</p>
+    <button class="primary big" id="again">Encore une séance</button><a class="secondary" href="#/tutor">Mes difficultés</a></main>`;
+  $('#again').onclick = startTutor;
 }
 
 // --- boot ---
