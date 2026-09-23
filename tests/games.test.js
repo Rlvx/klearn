@@ -82,3 +82,29 @@ test('reading pool: Hangul words of 1 to 6 syllables, each spelling once; length
   }
   assert.equal(pickByLength(pool, 6).ko, '이거 얼마예요?');
 });
+
+import { timeBonus, addTime, CLOCK, bestKey } from '../games.js';
+
+test('time bonus grows with difficulty', () => {
+  assert.equal(timeBonus('copy', '물'), 3);            // 3 keys
+  assert.ok(timeBonus('copy', '감사합니다') > timeBonus('copy', '물'));
+  assert.ok(timeBonus('listen', '감사합니다') > timeBonus('copy', '감사합니다'));
+  assert.equal(timeBonus('read', '가'), 3);             // 1 syllable
+  assert.equal(timeBonus('read', '감사합니다'), 9);     // 5 syllables
+  assert.equal(timeBonus('assemble', '관'), 5);         // 4 keys
+});
+
+test('hints halve the time bonus', () => {
+  assert.equal(timeBonus('write', '감사합니다', true), Math.ceil(timeBonus('write', '감사합니다') / 2));
+});
+
+test('clock stays between 0 and the cap', () => {
+  assert.equal(addTime(58, 9), CLOCK.max);
+  assert.equal(addTime(2, -CLOCK.penalty), 0);
+  assert.equal(addTime(20, 4), 24);
+});
+
+test('records are separate per mode', () => {
+  assert.notEqual(bestKey('flash', 'timed'), bestKey('flash', 'endless'));
+  assert.notEqual(bestKey('flash', 'timed'), 'flash');
+});

@@ -100,3 +100,20 @@ export function pickByLength(pool, len, rand = Math.random, avoid = null) {
   const fit = others.filter(it => syllableCount(it) <= len && syllableCount(it) >= Math.max(1, len - 1));
   return pick(fit.length ? fit : others, rand);
 }
+
+// --- Contre la montre ---
+// The clock starts at `start` seconds. A right answer earns seconds that scale with how hard it was:
+// keystrokes for writing (each key is work), syllables for reading. Hints halve the gain, misses cost `penalty`.
+export const CLOCK = { start: 30, max: 60, penalty: 3 };
+const PER_UNIT = { assemble: 1, copy: 0.6, write: 0.8, listen: 1, blank: 1, read: 1.5 };
+
+export function timeBonus(kind, ko, hinted = false) {
+  const units = kind === 'read' ? [...ko].filter(isSyllable).length : keystrokes(ko).length;
+  const secs = Math.ceil(1 + units * PER_UNIT[kind]);
+  return hinted ? Math.ceil(secs / 2) : secs;
+}
+
+export const addTime = (left, secs) => Math.max(0, Math.min(CLOCK.max, left + secs));
+
+// Records are kept per mode: best score against the clock, best streak in endless practice.
+export const bestKey = (id, mode) => `${id}:${mode === 'timed' ? 'timed' : 'run'}`;

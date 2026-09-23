@@ -3,7 +3,7 @@ import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles, canRead } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
-import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize, transliterate, readingPool, pickByLength } from './games.js';
+import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize, transliterate, readingPool, pickByLength, CLOCK, timeBonus, addTime, bestKey } from './games.js';
 import * as T from './tutor.js';
 import * as M from './mine.js';
 import * as R from './reading.js';
@@ -50,7 +50,7 @@ function initVoice() {
 
 // --- routing ---
 function route() {
-  const [, screen, arg] = location.hash.split('/');
+  const [, screen, arg, sub] = location.hash.split('/');
   if (screen !== 'session') session = null;
   if (screen !== 'tutor') tutor = null;
   if (screen !== 'read' || !arg) readRun = null;
@@ -60,7 +60,7 @@ function route() {
   else if (screen === 'field') renderField(arg);
   else if (screen === 'cards') renderCards(arg);
   else if (screen === 'games') renderGames();
-  else if (screen === 'game') renderGame(arg);
+  else if (screen === 'game') sub ? renderGame(arg, sub) : renderGameMenu(arg);
   else if (screen === 'tutor') arg === 'go' ? startTutor() : renderTutorHome();
   else if (screen === 'mine') renderMine();
   else if (screen === 'read') arg ? renderRead(arg) : renderReadList();
@@ -395,58 +395,134 @@ function renderSummary() {
 // --- games ---
 const GAMES = {
   assemble: { title: 'Assemble la syllabe', icon: '🧩', desc: 'Touche les lettres dans l\'ordre du clavier' },
-  flash: { title: 'Frappe', icon: '⚡', desc: 'Recopie 15 mots en hangeul', rounds: 15 },
-  mix: { title: 'Lis et écris', icon: '🔀', desc: 'Lire et écrire le hangeul, mélangés · 15 mots', rounds: 15 },
+  flash: { title: 'Frappe', icon: '⚡', desc: 'Recopie des mots en hangeul' },
+  mix: { title: 'Lis et écris', icon: '🔀', desc: 'Lire et écrire le hangeul, mélangés' },
   dictee: { title: 'Dictée', icon: '🎧', desc: 'Écoute et écris', voice: true },
   blanks: { title: 'Phrases à trous', icon: '🧱', desc: 'Complète la phrase en tapant' },
 };
 const TYPE_INPUT = '<input type="text" id="typed" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="한글로…">';
 let game = null;
 
-const stopGame = () => { game = null; };
+const stopGame = () => { if (game?.timer) clearInterval(game.timer); game = null; };
 const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
 const syllables = ko => [...ko].filter(isSyllable).length;
+const records = id => ({ timed: state.best[bestKey(id, 'timed')] ?? 0, run: state.best[bestKey(id, 'endless')] ?? 0 });
 
 function renderGames() {
   app.innerHTML = header('Jeux', '#/') + `<section class="units">${Object.entries(GAMES).map(([id, g]) => {
     const off = g.voice && !voice;
-    return `<a class="unit${off ? ' off' : ''}" href="${off ? '#/games' : `#/game/${id}`}"><span class="ko">${g.icon}</span><div><b>${esc(g.title)}</b><small>${off ? 'Nécessite la voix coréenne' : esc(g.desc)} · 🏆 ${state.best[id] ?? 0}</small></div></a>`;
+    const r = records(id);
+    return `<a class="unit${off ? ' off' : ''}" href="${off ? '#/games' : `#/game/${id}`}"><span class="ko">${g.icon}</span><div><b>${esc(g.title)}</b><small>${off ? 'Nécessite la voix coréenne' : esc(g.desc)}</small><small>⏱ ${r.timed} pts · 🔥 série ${r.run}</small></div></a>`;
   }).join('')}</section>
   <p class="notice">Pour taper : Gboard → Langues → Coréen, disposition 2-Beolsik.</p>`;
 }
 
-function renderGame(id) {
+function renderGameMenu(id) {
+  const g = GAMES[id];
+  if (!g || (g.voice && !voice)) return renderGames();
+  const r = records(id);
+  app.innerHTML = header(`${g.icon} ${esc(g.title)}`, '#/games') + `<p class="note">${esc(g.desc)}</p>
+    <section class="modes">
+      <a class="mode" href="#/game/${id}/endless"><b>∞ Entraînement</b><span>Sans fin, à ton rythme. Touche ✕ quand tu as fini.</span><small>🔥 Meilleure série : ${r.run}</small></a>
+      <a class="mode" href="#/game/${id}/timed"><b>⏱ Contre la montre</b><span>${CLOCK.start} s au départ. Chaque bonne réponse rajoute du temps : plus le mot est dur, plus tu en gagnes. Une erreur coûte ${CLOCK.penalty} s.</span><small>🏆 Record : ${r.timed} pts</small></a>
+    </section>`;
+}
+
+function renderGame(id, mode) {
   stopGame();
   if (!GAMES[id] || (GAMES[id].voice && !voice)) return renderGames();
-  game = { id, score: 0, round: 0, rounds: GAMES[id].rounds ?? 10 };
+  if (mode !== 'timed' && mode !== 'endless') return renderGameMenu(id);
+  game = { id, mode, score: 0, round: 0, hits: 0, run: 0, bestRun: 0, left: CLOCK.start, live: false };
+  if (mode === 'timed') startClock(game);
   nextRound();
 }
 
+// The clock only runs while a question is on screen: feedback and a hidden app don't cost time.
+function startClock(g) {
+  let last = performance.now();
+  g.timer = setInterval(() => {
+    const now = performance.now();
+    const dt = (now - last) / 1000;
+    last = now;
+    if (game !== g) return clearInterval(g.timer);
+    if (!g.live || document.hidden) return;
+    g.left = Math.max(0, g.left - dt);
+    drawHud();
+    if (g.left <= 0) endGame();
+  }, 100);
+}
+
 function nextRound() {
-  if (game.round >= game.rounds) return endGame();
-  game.round++;
-  // Frappe and Lis et écris keep one screen (and the keyboard) across words: move the bar by hand.
-  const bar = $('.bar div');
-  if (bar) bar.style.width = `${((game.round - 1) / game.rounds) * 100}%`;
-  ROUNDS[game.id]();
+  const g = game;
+  if (!g) return;
+  if (g.mode === 'timed' && g.left <= 0) return endGame();
+  g.round++;
+  g.live = true;
+  ROUNDS[g.id]();
+  drawHud();
 }
 
 function play(inner) {
   const g = game;
-  const progress = (g.round - 1) / g.rounds;
-  app.innerHTML = `<header class="top"><a href="#/games" class="icon-btn" aria-label="Quitter">✕</a>
-      <div class="bar"><div style="width:${progress * 100}%"></div></div><span class="combo" id="score">${g.score} pts</span></header>
+  const hud = g.mode === 'timed'
+    ? '<div class="bar clock"><div id="clockbar"></div></div><span class="secs" id="clock"></span>'
+    : '<span class="run" id="run"></span>';
+  app.innerHTML = `<header class="top hud"><button class="icon-btn" id="quit" aria-label="Terminer">✕</button>
+      ${hud}<span class="combo" id="score">${g.score} pts</span><span class="bonus" id="bonus"></span></header>
     <main class="card-area">${inner}</main><footer id="feedback"></footer>`;
+  $('#quit').onclick = () => (g.hits || g.round > 1 ? endGame() : (location.hash = `#/game/${g.id}`));
 }
 
-function addPoints(points) {
-  game.score += points;
-  $('#score').textContent = `${game.score} pts`;
-}
-
-function roundDone(ok, points, html) {
+function drawHud() {
   const g = game;
-  addPoints(points);
+  if (!g || !$('#score')) return;
+  $('#score').textContent = `${g.score} pts`;
+  if (g.mode === 'timed') {
+    $('#clock').textContent = `${Math.ceil(g.left)} s`;
+    $('#clockbar').style.width = `${(g.left / CLOCK.max) * 100}%`;
+    $('.clock').classList.toggle('low', g.left < 10);
+  } else {
+    $('#run').textContent = `🔥 ${g.run}`;
+  }
+}
+
+function showBonus(text, bad) {
+  const b = $('#bonus');
+  if (!b) return;
+  b.textContent = text;
+  b.className = `bonus show${bad ? ' bad' : ''}`;
+  void b.offsetWidth;
+  b.classList.remove('show');
+  requestAnimationFrame(() => b.classList.add('show'));
+}
+
+// Every game reports right and wrong answers here: points, streak, and seconds against the clock.
+function hit(points, secs) {
+  const g = game;
+  g.score += points;
+  g.hits++;
+  g.bestRun = Math.max(g.bestRun, ++g.run);
+  if (g.mode === 'timed' && secs) {
+    g.left = addTime(g.left, secs);
+    showBonus(`+${secs} s`);
+  }
+  drawHud();
+}
+
+function miss() {
+  const g = game;
+  g.run = 0;
+  if (g.mode === 'timed') {
+    g.left = addTime(g.left, -CLOCK.penalty);
+    showBonus(`−${CLOCK.penalty} s`, true);
+  }
+  drawHud();
+}
+
+function roundDone(ok, points, html, secs) {
+  const g = game;
+  g.live = false;
+  ok ? hit(points, secs) : miss();
   buzz(ok ? 30 : [60, 40, 60]);
   app.querySelectorAll('.card-area input, .card-area .row2 button').forEach(e => { e.disabled = true; });
   const fb = $('#feedback');
@@ -457,14 +533,14 @@ function roundDone(ok, points, html) {
 }
 
 // Shared by dictée and phrases à trous: type, 💡 reveals the answer for half points.
-function bindTyping(answer, check, reveal, spoken) {
+function bindTyping(answer, check, reveal, spoken, kind) {
   const input = $('#typed');
   let hinted = false;
   const submit = () => {
     if (!input.value.trim() || input.disabled) return;
     const ok = check(input.value);
     const pts = ok ? (hinted ? Math.ceil(syllables(answer) / 2) : syllables(answer)) * 5 : 0;
-    roundDone(ok, pts, reveal);
+    roundDone(ok, pts, reveal, timeBonus(kind, answer, hinted));
     if (spoken) speak(spoken);
   };
   $('#hint').onclick = () => { hinted = true; $('#keys').textContent = `${answer} · ${keystrokes(answer).join(' ')}`; input.focus(); };
@@ -501,7 +577,7 @@ const ROUNDS = {
       $('#picked').textContent = r.keys.slice(0, pos).join(' ');
       if (pos === r.keys.length) {
         speak(r.syllable);
-        roundDone(true, missed ? 5 : 10, `<p class="ko xl">${r.syllable}</p><p>${r.keys.join(' + ')}</p>`);
+        roundDone(true, missed ? 5 : 10, `<p class="ko xl">${r.syllable}</p><p>${r.keys.join(' + ')}</p>`, timeBonus('assemble', r.syllable, missed));
       }
     };
   },
@@ -526,7 +602,7 @@ const ROUNDS = {
     input.oninput = () => {
       if (!checkTyped(input.value, it)) return;
       buzz(30);
-      addPoints(hinted ? Math.ceil(syllables(it.ko) / 2) : syllables(it.ko));
+      hit(hinted ? Math.ceil(syllables(it.ko) / 2) : syllables(it.ko), timeBonus('copy', it.ko, hinted));
       nextRound();
     };
   },
@@ -538,13 +614,13 @@ const ROUNDS = {
     play(`<p class="label">Écoute et écris</p><button class="play" id="snd" aria-label="Réécouter">🔊</button>${typingControls}`);
     say(it);
     $('#snd').onclick = () => say(it);
-    bindTyping(it.ko, v => checkTyped(v, it), `<p class="ko">${esc(it.ko)}</p><p class="rom">${esc(it.rom)}</p><p>${esc(it.fr)}</p>`);
+    bindTyping(it.ko, v => checkTyped(v, it), `<p class="ko">${esc(it.ko)}</p><p class="rom">${esc(it.rom)}</p><p>${esc(it.fr)}</p>`, null, 'listen');
   },
 
   blanks() {
     const r = blankRound(patterns, Object.fromEntries(Object.entries(byId).map(([id, v]) => [id, v.item])));
     play(`<p class="label">Complète en coréen</p><div class="flash"><p class="ko lg">${esc(r.prompt)}</p><p class="fr">${esc(r.fr)}</p></div>${typingControls}`);
-    bindTyping(r.noun.ko, v => checkTyped(v, r.noun) || checkTyped(v, { ko: r.full }), `<p class="ko">${esc(r.full)}</p><p>${esc(r.fr)}</p>`, r.full);
+    bindTyping(r.noun.ko, v => checkTyped(v, r.noun) || checkTyped(v, { ko: r.full }), `<p class="ko">${esc(r.full)}</p><p>${esc(r.fr)}</p>`, r.full, 'blank');
   },
 };
 
@@ -577,9 +653,9 @@ function mixRound() {
   void word.offsetWidth;
   word.classList.add('pop');
   $('#keys').textContent = '';
-  const win = pts => {
+  const win = (pts, secs) => {
     buzz(30);
-    addPoints(pts);
+    hit(pts, secs);
     if (++g.streak % 3 === 0) g.len = Math.min(6, g.len + 1);
     $('#last').innerHTML = `✓ <span class="ko">${esc(it.ko)}</span> · ${esc(it.rom || letters)}${it.fr ? ` · ${esc(it.fr)}` : ''}`;
     nextRound();
@@ -587,6 +663,7 @@ function mixRound() {
   const lose = () => {
     g.len = Math.max(1, g.len - 1);
     g.streak = 0;
+    miss();
     buzz([60, 40, 60]);
     $('#last').innerHTML = `✗ <span class="ko">${esc(it.ko)}</span> = ${esc(letters)}`;
   };
@@ -601,7 +678,7 @@ function mixRound() {
     let hinted = false;
     $('#hint').onclick = () => { hinted = true; $('#keys').textContent = keystrokes(it.ko).join(' '); input.focus(); };
     $('#skip').onclick = () => { lose(); nextRound(); };
-    input.oninput = () => { if (checkTyped(input.value, it)) win(hinted ? Math.ceil(n / 2) : n); };
+    input.oninput = () => { if (checkTyped(input.value, it)) win(hinted ? Math.ceil(n / 2) : n, timeBonus('write', it.ko, hinted)); };
     return;
   }
 
@@ -623,9 +700,10 @@ function mixRound() {
       : [...new Map(tested.map(d => [T.keyOf(d.slot, d.want), { key: T.keyOf(d.slot, d.want), ok: true }])).values()];
     T.record(state.tutor, marks, Date.now());
     persist();
-    if (!pick.diff) return win(n);
+    if (!pick.diff) return win(n, timeBonus('read', it.ko));
     app.querySelectorAll('#opts .choice').forEach((c, i) => { c.disabled = true; if (!opts[i].diff) c.classList.add('right'); });
     b.classList.add('wrong');
+    g.live = false;
     lose();
     setTimeout(() => { if (game === g) nextRound(); }, 1400);
   };
@@ -633,16 +711,21 @@ function mixRound() {
 
 function endGame() {
   if (!game) return;
-  const { id, score } = game;
+  const { id, mode, score, hits, bestRun } = game;
   stopGame();
-  const record = score > (state.best[id] ?? 0);
-  if (record) state.best[id] = score;
+  const timed = mode === 'timed';
+  const key = bestKey(id, mode);
+  const value = timed ? score : bestRun;
+  const record = value > (state.best[key] ?? 0);
+  if (record) state.best[key] = value;
   addXp(state, score, Date.now());
   persist();
-  app.innerHTML = `<main class="summary"><p class="big-emoji">${record ? '🏆' : '🎉'}</p>
-    <h1>${record ? 'Nouveau record !' : 'Partie terminée'}</h1><p>${score} points · +${score} XP</p><p>Record : ${state.best[id] ?? 0}</p>
-    <button class="primary big" id="again">Rejouer</button><a class="secondary" href="#/games">Autres jeux</a></main>`;
-  $('#again').onclick = () => renderGame(id);
+  const title = record ? 'Nouveau record !' : timed ? 'Temps écoulé !' : 'Bien joué !';
+  const recLine = timed ? `Record : ${state.best[key]} pts` : `Meilleure série : ${bestRun} · record ${state.best[key] ?? 0}`;
+  app.innerHTML = `<main class="summary"><p class="big-emoji">${record ? '🏆' : timed ? '⏱' : '🎉'}</p>
+    <h1>${title}</h1><p>${score} points · ${hits} bonne${hits > 1 ? 's' : ''} réponse${hits > 1 ? 's' : ''} · +${score} XP</p><p>${recLine}</p>
+    <button class="primary big" id="again">Rejouer</button><a class="secondary" href="#/game/${id}">Changer de mode</a><a class="secondary" href="#/games">Autres jeux</a></main>`;
+  $('#again').onclick = () => renderGame(id, mode);
 }
 
 // --- tutor ---
