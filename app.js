@@ -3,7 +3,7 @@ import { newCard, review, DAY } from './srs.js';
 import { addXp, currentStreak, todayXp, dayKey } from './game.js';
 import { pickExercise, buildQuestion, checkTyped, checkTiles, canRead } from './exercises.js';
 import { buildSession, lessonSession, lessonUnlocked, lessonDone, cardSession } from './session.js';
-import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize, transliterate, romMatches, readingPool, pickByLength } from './games.js';
+import { isSyllable, keystrokes, syllablePool, assembleRound, typingPool, blankRound, romanize, transliterate, readingPool, pickByLength } from './games.js';
 import * as T from './tutor.js';
 import * as M from './mine.js';
 import * as R from './reading.js';
@@ -396,14 +396,12 @@ function renderSummary() {
 const GAMES = {
   assemble: { title: 'Assemble la syllabe', icon: '🧩', desc: 'Touche les lettres dans l\'ordre du clavier' },
   flash: { title: 'Frappe éclair', icon: '⚡', desc: '60 s pour taper un max de mots' },
-  romko: { title: 'Écris en hangeul', icon: '✍️', desc: 'Romanisation → hangeul, 60 s' },
-  koro: { title: 'Lis en latin', icon: '👀', desc: 'Hangeul → romanisation, 60 s' },
+  mix: { title: 'Lis et écris', icon: '🔀', desc: 'Lire et écrire le hangeul, mélangés · 60 s' },
   dictee: { title: 'Dictée', icon: '🎧', desc: 'Écoute et écris', voice: true },
   blanks: { title: 'Phrases à trous', icon: '🧱', desc: 'Complète la phrase en tapant' },
 };
 const FLASH_SECONDS = 60;
-const TIMED = new Set(['flash', 'romko', 'koro']);
-const ROM_INPUT_GAME = '<input type="text" id="typed" lang="fr" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="en lettres latines…">';
+const TIMED = new Set(['flash', 'mix']);
 const TYPE_INPUT = '<input type="text" id="typed" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="한글로…">';
 let game = null;
 
@@ -543,8 +541,7 @@ const ROUNDS = {
     };
   },
 
-  romko() { speedRound('ko'); },
-  koro() { speedRound('rom'); },
+  mix() { mixRound(); },
 
   dictee() {
     const it = pickOne(game.pool ??= typingPool(units.flatMap(u => u.items), state.cards));
@@ -562,52 +559,85 @@ const ROUNDS = {
 };
 
 const latinOnly = s => s.toLowerCase().replace(/[^a-z]/g, '');
-const spellHint = ko => [...ko].filter(isSyllable).map(s => T.spell(s).map(p => `${p.jamo} ${p.rom}`).join(' ')).join(' · ');
 
-// Read or write words for their letters, not their meaning. One persistent input keeps the keyboard open.
-function speedRound(target) {
+// Read and write words for their letters, not their meaning. Writing is typed in Hangul, reading is a
+// 4-way choice, so the phone keyboard never has to switch language. One persistent input keeps it open.
+function mixRound() {
   const g = game;
   g.pool ??= readingPool([...contentItems(), ...state.custom]);
   g.len ??= 1;
   g.streak ??= 0;
   const it = pickByLength(g.pool, g.len, Math.random, g.last);
   g.last = it;
-  let hinted = false;
+  // Mostly alternate, never more than two of a kind in a row.
+  const mode = g.modes?.length >= 2 && g.modes.at(-1) === g.modes.at(-2) ? (g.modes.at(-1) === 'write' ? 'read' : 'write')
+    : Math.random() < 0.5 ? 'write' : 'read';
+  (g.modes ??= []).push(mode);
   if (g.round === 1) {
-    play(`<p class="label">${target === 'ko' ? 'Écris en hangeul' : 'Écris en lettres latines'}</p><div class="flash" id="word"></div>
-      ${target === 'ko' ? TYPE_INPUT : ROM_INPUT_GAME}
-      <div class="row2"><button class="secondary" id="hint">💡 ${target === 'ko' ? 'Touches' : 'Lettres'}</button><button class="secondary" id="skip">⏭ Passer</button></div>
+    play(`<p class="label" id="mode"></p><div class="flash" id="word"></div><div class="choices wide" id="opts"></div>
+      <div id="writing">${TYPE_INPUT}<div class="row2"><button class="secondary" id="hint">💡 Touches</button><button class="secondary" id="skip">⏭ Passer</button></div></div>
       <p class="note ko" id="keys"></p><p class="note" id="last"></p>`);
   }
   const letters = transliterate(it.ko);
   const said = it.rom && latinOnly(it.rom) !== latinOnly(letters) ? it.rom : '';
-  $('#word').innerHTML = target === 'ko'
-    ? `<p class="latin ${letters.length > 14 ? 'lg' : 'xl'}">${esc(letters)}</p>${said ? `<p class="note">se dit : ${esc(said)}</p>` : ''}`
-    : `<p class="ko ${size(it.ko)}">${esc(it.ko)}</p>`;
-  $('#word').classList.remove('pop');
-  void $('#word').offsetWidth;
-  $('#word').classList.add('pop');
-  $('#keys').textContent = '';
+  const n = syllables(it.ko);
   const input = $('#typed');
-  input.value = '';
-  input.focus();
-  $('#hint').onclick = () => { hinted = true; $('#keys').textContent = target === 'ko' ? keystrokes(it.ko).join(' ') : spellHint(it.ko); input.focus(); };
-  $('#skip').onclick = () => {
-    $('#last').innerHTML = `⏭ <span class="ko">${esc(it.ko)}</span> = ${esc(letters)}`;
-    g.len = Math.max(1, g.len - 1);
-    g.streak = 0;
-    buzz([60, 40, 60]);
-    nextRound();
-  };
-  input.oninput = () => {
-    const ok = target === 'ko' ? checkTyped(input.value, it) : romMatches(input.value, it, [M.autoRom(it.ko)]);
-    if (!ok) return;
+  const word = $('#word');
+  word.classList.remove('pop');
+  void word.offsetWidth;
+  word.classList.add('pop');
+  $('#keys').textContent = '';
+  const win = pts => {
     buzz(30);
-    const n = syllables(it.ko);
-    addPoints(hinted ? Math.ceil(n / 2) : n);
+    addPoints(pts);
     if (++g.streak % 3 === 0) g.len = Math.min(6, g.len + 1);
     $('#last').innerHTML = `✓ <span class="ko">${esc(it.ko)}</span> · ${esc(it.rom || letters)}${it.fr ? ` · ${esc(it.fr)}` : ''}`;
     nextRound();
+  };
+  const lose = () => {
+    g.len = Math.max(1, g.len - 1);
+    g.streak = 0;
+    buzz([60, 40, 60]);
+    $('#last').innerHTML = `✗ <span class="ko">${esc(it.ko)}</span> = ${esc(letters)}`;
+  };
+
+  if (mode === 'write') {
+    $('#mode').textContent = 'Écris en hangeul';
+    word.innerHTML = `<p class="latin ${letters.length > 14 ? 'lg' : 'xl'}">${esc(letters)}</p>${said ? `<p class="note">se dit : ${esc(said)}</p>` : ''}`;
+    $('#opts').innerHTML = '';
+    $('#writing').hidden = false;
+    input.value = '';
+    input.focus();
+    let hinted = false;
+    $('#hint').onclick = () => { hinted = true; $('#keys').textContent = keystrokes(it.ko).join(' '); input.focus(); };
+    $('#skip').onclick = () => { lose(); nextRound(); };
+    input.oninput = () => { if (checkTyped(input.value, it)) win(hinted ? Math.ceil(n / 2) : n); };
+    return;
+  }
+
+  $('#mode').textContent = 'Comment ça se lit ?';
+  word.innerHTML = `<p class="ko ${size(it.ko)}">${esc(it.ko)}</p>`;
+  $('#writing').hidden = true;
+  input.oninput = null;
+  input.blur();
+  const opts = T.wordChoices(it.ko);
+  $('#opts').innerHTML = opts.map((o, i) => `<button class="choice latin" data-i="${i}">${esc(o.text)}</button>`).join('');
+  $('#opts').onclick = e => {
+    const b = e.target.closest('.choice');
+    if (!b || b.disabled) return;
+    const pick = opts[+b.dataset.i];
+    // Feed the tutor: every letter tested by a decoy counts as read right, or as confused with the picked one.
+    const tested = opts.filter(o => o.diff).map(o => o.diff);
+    const marks = pick.diff
+      ? [{ key: T.keyOf(pick.diff.slot, pick.diff.want), ok: false, got: T.keyOf(pick.diff.slot, pick.diff.got) }]
+      : [...new Map(tested.map(d => [T.keyOf(d.slot, d.want), { key: T.keyOf(d.slot, d.want), ok: true }])).values()];
+    T.record(state.tutor, marks, Date.now());
+    persist();
+    if (!pick.diff) return win(n);
+    app.querySelectorAll('#opts .choice').forEach((c, i) => { c.disabled = true; if (!opts[i].diff) c.classList.add('right'); });
+    b.classList.add('wrong');
+    lose();
+    setTimeout(() => { if (game === g) nextRound(); }, 1400);
   };
 }
 

@@ -130,3 +130,21 @@ test('letters never practised are not flagged without a reason', () => {
   const w = T.scores({ letters: {}, confusions: {} }, cards, hangulItems, known);
   assert.deepEqual(T.difficulties({ letters: {}, confusions: {} }, w), []);
 });
+
+test('word reading choices: one right spelling, three that differ by exactly the letter they name', () => {
+  for (const ko of ['감사합니다', '원', '가', '안녕하세요', '이거 얼마예요?', '닭', '와이파이']) {
+    for (let r = 0; r < 20; r++) {
+      const c = T.wordChoices(ko, seed);
+      assert.equal(c.length, 4, ko);
+      assert.equal(new Set(c.map(o => o.text)).size, 4, ko);
+      assert.equal(c.filter(o => !o.diff).length, 1, ko);
+      const right = c.find(o => !o.diff).text.split(/[·\s]/);
+      for (const o of c.filter(x => x.diff)) {
+        const parts = o.text.split(/[·\s]/);
+        assert.equal(parts.length, right.length, `${ko}: ${o.text}`);
+        assert.equal(parts.filter((p, i) => p !== right[i]).length, 1, `${ko}: ${o.text}`);
+        assert.notEqual(o.diff.want, o.diff.got);
+      }
+    }
+  }
+});

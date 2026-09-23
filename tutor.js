@@ -1,5 +1,5 @@
 import { shuffle } from './exercises.js';
-import { isSyllable, romanize } from './games.js';
+import { isSyllable, romanize, transliterate } from './games.js';
 
 // Offline tutor: finds which letter was misread, explains the confusion, and aims the next questions at weak letters.
 // Letter keys: initials and vowels are the jamo itself, finals are prefixed with "_" ("_ㅇ" = ㅇ at the bottom).
@@ -402,4 +402,30 @@ export function pickWord(pool, weights, rand = Math.random) {
     return keys.reduce((s, k) => s + (weights[k] ?? 0.5), 0) / keys.length;
   };
   return pickWeighted(pool.map(it => [it, w(it) ** 2]), rand);
+}
+
+// Reading a whole word: the right letter-by-letter spelling and three that differ by one confusable letter.
+// Each wrong option carries the swap it makes, so a wrong pick names the confusion.
+export function wordChoices(ko, rand = Math.random) {
+  const chars = [...ko.normalize('NFC')];
+  const at = chars.map((c, i) => (isSyllable(c) ? i : -1)).filter(i => i >= 0);
+  const out = [{ text: transliterate(ko), diff: null }];
+  for (const strict of [true, false]) {
+    for (let tries = 0; out.length < 4 && tries < 80; tries++) {
+      const i = at[Math.floor(rand() * at.length)];
+      const p = split(chars[i]);
+      const slots = p[2] ? [0, 1, 2] : [0, 1];
+      const slot = slots[Math.floor(rand() * slots.length)];
+      const alts = confusables(slot, p[slot]);
+      const x = alts[Math.floor(rand() * alts.length)];
+      const q = [...p];
+      q[slot] = x;
+      if (x === undefined || (strict && !plausible(...q))) continue;
+      const swapped = [...chars];
+      swapped[i] = join(...q);
+      const text = transliterate(swapped.join(''));
+      if (!out.some(o => o.text === text)) out.push({ text, diff: { slot, want: p[slot], got: x } });
+    }
+  }
+  return shuffle(out, rand);
 }
